@@ -82,6 +82,26 @@ button:focus-visible{outline:2px solid #fff;outline-offset:-4px}
 .qnext{padding:11px 16px;border-radius:12px;background:#241A45;color:#fff;font-weight:600;font-size:14px}
 .qsee{padding:11px 16px;border-radius:12px;background:#fff;border:1px solid #E4DFEE;color:#241A45;font-weight:600;font-size:14px}
 .qstat{display:flex;gap:14px;font:500 11px var(--f-m);letter-spacing:.06em;text-transform:uppercase;opacity:.8}
+.qbar{height:4px;border-radius:2px;background:rgba(255,255,255,.16);margin:8px 0 8px;overflow:hidden}
+.qbar i{display:block;height:100%;background:#fff;border-radius:2px;transition:width .4s}
+.qlab{margin:4px 0 0;font:500 10.5px var(--f-m);letter-spacing:.08em;text-transform:uppercase;color:#5B3FC4}
+.qchips{display:flex;flex-wrap:wrap;gap:6px}
+.qcard .qf{background:#fff;border:1px solid #E4DFEE;color:#241A45}
+.qcard .qf[aria-pressed="true"]{background:#241A45;border-color:#241A45;color:#fff}
+.qstart{padding:16px;border-radius:14px;background:#fff;color:#241A45;font:700 16px var(--f-d);text-align:center}
+.qmini{margin:6px 0 -4px;font:500 10px var(--f-m);letter-spacing:.08em;text-transform:uppercase;color:#6B6480}
+.qwrong{margin-top:8px;padding:12px 14px;border-radius:12px;background:#FBEFF2;border:1px solid #F1D3DA;display:flex;flex-direction:column;gap:6px}
+.qwrong .qmini{margin-top:0;color:#B23149}
+.qname2{margin:0;font:700 18px/1.15 var(--f-d);color:#171326}
+.qend{align-items:flex-start}
+.qbig{margin:0;font:700 56px/1 var(--f-d);letter-spacing:-.03em;color:#241A45}
+.qbig span{font-size:24px;color:#6B6480}
+.qerrs{display:flex;flex-direction:column;gap:8px}
+.qerr{background:#F7F5FB;color:#171326;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.qsit{margin:0;font-size:14px;line-height:1.45;color:#2A253A}
+.qline{margin:0;font-size:13.5px;font-weight:600}
+.qline.good{color:#1F7A51}.qline.bad{color:#B23149}
+.qerr .qsee{padding:8px 12px;font-size:13px}
 .light{color:#10161E}
 
 /* En-tête d'un niveau ouvert */
@@ -590,44 +610,80 @@ function nextQuestion(){
   add(pick(same));let guard=0;while(opts.length<4&&guard++<200)add(pick(wide));
   Q.cur={...q,opts:shuffle(opts)};
 }
+/* Une partie : écran de départ (nombre de questions, courant) → questions → bilan */
+Q.phase='setup';Q.n=10;Q.i=0;Q.errors=[];
+const where=b=>{for(const [fi,f] of FAM.entries())for(const [mi,m] of f.m.entries())if(m[1].includes(b))return {fi,mi};return {fi:0,mi:0}};
+const chips=(items,attr,cur)=>items.map(([l,v])=>`<button class="qf" ${attr}="${v}" aria-pressed="${cur===v}">${esc(l)}</button>`).join('');
+const statHTML=()=>`<span>Bonnes réponses ${Q.score}</span><span>Série ${Q.streak}</span><span>Record ${Q.best}</span>`;
 function quizHTML(){
-  const q=Q.cur;
-  return `<div class="fhead mv"><button class="back in" data-back>‹ Courants</button><h3>Quel est ce biais ?</h3>
-   <p class="qstat in"><span>Score ${Q.score} / ${Q.total}</span><span>Série ${Q.streak}</span><span>Record ${Q.best}</span></p></div>
+  if(Q.phase==='setup') return `<div class="fhead mv"><button class="back in" data-back>‹ Courants</button><h3>Quiz</h3>
+   <p class="in">Retrouve le biais derrière chaque situation</p></div>
    <div class="qwrap">
-    <div class="qfilt in">${[['Tous',-1],...FAM.map((f,i)=>[f.name,i])].map(([l,i])=>`<button class="qf" data-qf="${i}" aria-pressed="${Q.filter===i}">${esc(l)}</button>`).join('')}</div>
+    <div class="qcard mv in"><p class="qlab">Nombre de questions</p><div class="qchips">${chips([['5',5],['10',10],['20',20]],'data-qn',Q.n)}</div>
+     <p class="qlab">Courant</p><div class="qchips">${chips([['Tous',-1],...FAM.map((f,i)=>[f.name,i])],'data-qf',Q.filter)}</div>
+     ${Q.best?`<p class="qdef">Ton record : ${Q.best} bonnes réponses d'affilée.</p>`:''}</div>
+    <button class="qstart mv in" data-qstart>Commencer la partie ›</button>
+   </div>`;
+  if(Q.phase==='end'){
+    const pct=Math.round(100*Q.score/Q.n);
+    const msg=pct===100?'Parfait, aucun piège ne t\'a eu.':pct>=70?'Très bien, tu repères la plupart des biais.':pct>=40?'Pas mal. Revois les fiches ci-dessous pour progresser.':'Ces biais sont subtils : les fiches ci-dessous t\'aideront.';
+    return `<div class="fhead mv"><button class="back in" data-back>‹ Courants</button><h3>Résultat</h3><p class="in">Partie de ${Q.n} questions</p></div>
+    <div class="qwrap">
+     <div class="qcard qend mv in"><p class="qbig">${Q.score} <span>/ ${Q.n}</span></p><p class="qdef">${msg}</p></div>
+     ${Q.errors.length?`<p class="qask in">À revoir (${Q.errors.length})</p><div class="qerrs mv in">${Q.errors.map(e=>`<div class="qerr">
+       <p class="qsit">${esc(e.t)}</p><p class="qline good">✓ ${esc(e.b)}</p><p class="qline bad">✗ Ta réponse : ${esc(e.wrong)}</p>
+       <button class="qsee" data-qsee="${esc(e.b)}">Voir la fiche</button></div>`).join('')}</div>`:''}
+     <div class="qbtns in"><button class="qnext" data-qreplay>Rejouer</button><button class="qsee" data-back>Retour à l'accueil</button></div>
+    </div>`;
+  }
+  const q=Q.cur;
+  return `<div class="fhead mv"><button class="back in" data-back>‹ Courants</button><h3>Question ${Q.i+1} / ${Q.n}</h3>
+   <div class="qbar in"><i style="width:${100*Q.i/Q.n}%"></i></div>
+   <p class="qstat in">${statHTML()}</p></div>
+   <div class="qwrap">
     <div class="qcard mv in"><span class="exd">${esc(q.d)}</span><p class="qtext">${esc(q.t)}</p></div>
     <p class="qask in">Quel biais cognitif est à l'œuvre ?</p>
     <div class="qopts mv in">${q.opts.map(o=>`<button class="qo" data-qa="${esc(o)}">${esc(o)}</button>`).join('')}</div>
     <div class="qfb" hidden></div>
    </div>`;
 }
-function renderQuiz(){if(!Q.cur)nextQuestion();quizS.style.setProperty('--hd','#1A1233');quizS.innerHTML=quizHTML()}
+function renderQuiz(){Q.phase='setup';quizS.style.setProperty('--hd','#1A1233');quizS.innerHTML=quizHTML()}
+function swapQuiz(){
+  /* l'écran actuel part d'un bloc vers la gauche, le suivant arrive d'un bloc par la droite */
+  const els=[...quizS.querySelectorAll('.qwrap > *')];
+  els.forEach(el=>el.animate([{transform:'none',opacity:1},{transform:'translateX(-40px)',opacity:0}],{duration:D(180),easing:'ease-in',fill:'forwards'}));
+  setTimeout(()=>{quizS.innerHTML=quizHTML();quizS.querySelector('.qwrap').scrollTop=0;
+    quizS.querySelectorAll('.qwrap > *').forEach(el=>el.animate([{transform:'translateX(40px)',opacity:0},{transform:'none',opacity:1}],{duration:D(320),easing:E}))},D(180));
+}
+function startQuiz(){Q.phase='play';Q.i=0;Q.score=0;Q.streak=0;Q.errors=[];nextQuestion();swapQuiz()}
+const defOf=b=>DEF[b]?DEF[b][0]:'';
 function answer(btn){
-  const q=Q.cur,ok=btn.dataset.qa===q.b;
-  Q.total++;if(ok){Q.score++;Q.streak++;if(Q.streak>Q.best){Q.best=Q.streak;try{localStorage.setItem('quiz-best',Q.best)}catch(e){}}}else Q.streak=0;
+  const q=Q.cur,pickd=btn.dataset.qa,ok=pickd===q.b;
+  if(ok){Q.score++;Q.streak++;if(Q.streak>Q.best){Q.best=Q.streak;try{localStorage.setItem('quiz-best',Q.best)}catch(e){}}}
+  else{Q.streak=0;Q.errors.push({b:q.b,t:q.t,wrong:pickd})}
   quizS.querySelectorAll('.qo').forEach(b=>{b.disabled=true;
     if(b.dataset.qa===q.b)b.classList.add('ok');else if(b===btn)b.classList.add('ko');else b.classList.add('dim')});
-  const st=quizS.querySelector('.qstat');st.innerHTML=`<span>Score ${Q.score} / ${Q.total}</span><span>Série ${Q.streak}</span><span>Record ${Q.best}</span>`;
-  const fb=quizS.querySelector('.qfb'),d=DEF[q.b];
+  quizS.querySelector('.qstat').innerHTML=statHTML();
+  quizS.querySelector('.qbar i').style.width=(100*(Q.i+1)/Q.n)+'%';
+  const fb=quizS.querySelector('.qfb'),why=FICHE[q.b]?FICHE[q.b].why:'',last=Q.i+1>=Q.n;
   fb.innerHTML=`<span class="qres ${ok?'good':'bad'}">${ok?'✓ Bien vu !':'✗ Pas tout à fait'}</span>
-    <p class="qname">${esc(q.b)}</p>${d?`<p class="qdef">${esc(d[0])}</p>`:''}
-    <div class="qbtns"><button class="qnext" data-qnext>Question suivante ›</button><button class="qsee" data-qsee>Voir la fiche</button></div>`;
+    <p class="qmini">${ok?'C\'était bien':'La bonne réponse'}</p>
+    <p class="qname">${esc(q.b)}</p><p class="qdef">${esc(defOf(q.b))}</p>
+    ${why?`<p class="qmini">Pourquoi ça arrive</p><p class="qdef">${esc(why)}</p>`:''}
+    ${ok?'':`<div class="qwrong"><p class="qmini">Ta réponse</p><p class="qname2">${esc(pickd)}</p><p class="qdef">${esc(defOf(pickd))}</p></div>`}
+    <div class="qbtns"><button class="qnext" data-qnext>${last?'Voir mon résultat ›':'Question suivante ›'}</button><button class="qsee" data-qsee="${esc(q.b)}">Voir la fiche</button></div>`;
   fb.hidden=false;
   fb.animate([{opacity:0,transform:'translateY(14px)'},{opacity:1,transform:'none'}],{duration:D(320),easing:E});
-  const w=quizS.querySelector('.qwrap');setTimeout(()=>w.scrollTo({top:w.scrollHeight,behavior:reduce?'auto':'smooth'}),D(120));
+  const w=quizS.querySelector('.qwrap');setTimeout(()=>w.scrollTo({top:fb.offsetTop-12,behavior:reduce?'auto':'smooth'}),D(120));
 }
 function nextQ(){
-  nextQuestion();
-  const w=quizS.querySelector('.qwrap'),card=quizS.querySelector('.qcard'),opts=quizS.querySelector('.qopts');
-  /* l'ancienne question part d'un bloc vers la gauche, la nouvelle arrive d'un bloc par la droite */
-  [card,opts].forEach(el=>el.animate([{transform:'none',opacity:1},{transform:'translateX(-40px)',opacity:0}],{duration:D(180),easing:'ease-in',fill:'forwards'}));
-  setTimeout(()=>{quizS.innerHTML=quizHTML();quizS.querySelector('.qwrap').scrollTop=0;
-    [quizS.querySelector('.qcard'),quizS.querySelector('.qopts')].forEach(el=>el.animate([{transform:'translateX(40px)',opacity:0},{transform:'none',opacity:1}],{duration:D(320),easing:E}))},D(180));
+  Q.i++;
+  if(Q.i>=Q.n){Q.phase='end'}else nextQuestion();
+  swapQuiz();
 }
 function seeFiche(btn){
-  const q=Q.cur;F=q.fi;M=q.mi;
-  renderDet(q.b,shade(FAM[q.fi].c,.35),false);push(quizS,btn,det);
+  const b=btn.dataset.qsee||Q.cur.b,{fi,mi}=where(b);F=fi;M=mi;
+  renderDet(b,shade(FAM[fi].c,.35),false);push(quizS,btn,det);
 }
 
 $('#sw').addEventListener('click',e=>{
@@ -636,7 +692,11 @@ $('#sw').addEventListener('click',e=>{
   if(t.dataset.qa!==undefined){answer(t);return}
   if(t.hasAttribute('data-qnext')){nextQ();return}
   if(t.hasAttribute('data-qsee')){seeFiche(t);return}
-  if(t.dataset.qf!==undefined){Q.filter=+t.dataset.qf;nextQuestion();quizS.innerHTML=quizHTML();return}
+  if(t.dataset.qf!==undefined||t.dataset.qn!==undefined){
+    if(t.dataset.qf!==undefined)Q.filter=+t.dataset.qf;else Q.n=+t.dataset.qn;
+    const grp=t.parentElement;grp.querySelectorAll('.qf').forEach(b=>b.setAttribute('aria-pressed',b===t));return}
+  if(t.hasAttribute('data-qstart')){startQuiz();return}
+  if(t.hasAttribute('data-qreplay')){Q.phase='setup';swapQuiz();return}
   if(t.dataset.f!==undefined){renderFam(+t.dataset.f);push(home,t,fam)}
   else if(t.dataset.m!==undefined){renderMot(+t.dataset.m);push(fam,t,mot)}
   else if(t.dataset.b){renderDet(t.dataset.b,t.style.getPropertyValue('--bg'),t.classList.contains('light'));push(mot,t,det)}
