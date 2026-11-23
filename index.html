@@ -43,7 +43,22 @@ button:focus-visible{outline:2px solid #fff;outline-offset:-4px}
 .blocks{flex:1;display:flex;flex-direction:column;min-height:0}
 .block{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-end;gap:4px;padding:14px 20px 16px;
   background:var(--bg);position:relative;box-shadow:0 -1px 0 rgba(0,0,0,.16);overflow:hidden}
-#home .block:first-child{padding-top:calc(var(--top) + 10px)}
+/* Recherche : bandeau tout en haut de l'accueil, résultats par-dessus les courants */
+.hsearch{flex:none;position:relative;z-index:3;padding:calc(var(--top) + 6px) 14px 10px;background:#1A1233}
+.hsearch label{display:flex;align-items:center;gap:8px;height:42px;padding:0 6px 0 12px;border-radius:12px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14)}
+.hsearch label:focus-within{border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.14)}
+.hsearch svg{flex:none;width:17px;height:17px;stroke:rgba(255,255,255,.7)}
+.hsearch input{flex:1;min-width:0;height:100%;border:0;background:none;color:#fff;font:500 15px var(--f-b);outline:none}
+.hsearch input::placeholder{color:rgba(255,255,255,.55)}
+.hsearch input::-webkit-search-cancel-button{display:none}
+.sclear{flex:none;width:30px;height:30px;border-radius:50%;color:#fff;font-size:18px;line-height:30px;text-align:center;opacity:.75}
+.sres{position:absolute;left:0;right:0;bottom:0;z-index:2;overflow:auto;scrollbar-width:none;background:#130E22;display:flex;flex-direction:column;padding-bottom:calc(16px + var(--bot,0px))}
+.scount{margin:0;padding:12px 18px 8px;font:500 10.5px var(--f-m);letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+.srow{display:flex;flex-direction:column;gap:2px;width:100%;box-sizing:border-box;padding:12px 18px;background:var(--bg);color:#fff;box-shadow:0 -1px 0 rgba(0,0,0,.16)}
+.srow b{font:600 15.5px var(--f-b)}
+.srow small{font-size:12px;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srow mark{background:rgba(255,255,255,.28);color:inherit;border-radius:3px;padding:0 1px}
+.sempty{margin:0;padding:18px;color:rgba(255,255,255,.75);font-size:14px;line-height:1.5}
 .block .q{font:500 11px var(--f-m);letter-spacing:.08em;text-transform:uppercase;opacity:.75}
 .block b{font:700 28px/1 var(--f-d);letter-spacing:-.02em;padding-right:64px}
 .block .n{position:absolute;right:20px;bottom:18px;font:500 12px var(--f-m);opacity:.85}
@@ -576,6 +591,38 @@ function swapDet(n){
   det.querySelector('.dwrap').animate([{transform:'translateX(40px)',opacity:0},{transform:'none',opacity:1}],{duration:D(420),easing:E});
 }
 
+/* ---- Recherche ---- */
+home.insertAdjacentHTML('afterbegin',`<div class="hsearch mv"><label><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+  <input id="sq" type="search" placeholder="Rechercher un biais…" autocomplete="off" enterkeyhint="search" aria-label="Rechercher un biais">
+  <button class="sclear" id="sclear" aria-label="Effacer la recherche" hidden>×</button></label></div><div class="sres" id="sres" hidden></div>`);
+const sq=$('#sq'),sres=$('#sres'),sclear=$('#sclear');
+const snorm=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+/* index : nom du biais (prioritaire), puis définition et nom anglais */
+const SIDX=[];{const seen=new Set();FAM.forEach((f,fi)=>f.m.forEach((m,mi)=>m[1].forEach(b=>{if(seen.has(b))return;seen.add(b);
+  SIDX.push({b,fi,mi,n:snorm(b),d:snorm((DEF[b]||[''])[0])})})));}
+function hl(text,v){const i=snorm(text).indexOf(v);if(i<0||!v)return esc(text);return esc(text.slice(0,i))+'<mark>'+esc(text.slice(i,i+v.length))+'</mark>'+esc(text.slice(i+v.length))}
+function runSearch(){
+  const raw=sq.value.trim(),v=snorm(raw);sclear.hidden=!raw;
+  if(!v){if(!sres.hidden){sres.animate([{opacity:1},{opacity:0,transform:'translateY(12px)'}],{duration:D(180)}).onfinish=()=>{sres.hidden=true}}return}
+  const byName=SIDX.filter(x=>x.n.includes(v)).sort((a,b)=>(a.n.startsWith(v)?0:1)-(b.n.startsWith(v)?0:1)||a.n.localeCompare(b.n));
+  const byDef=v.length>=4?SIDX.filter(x=>!x.n.includes(v)&&x.d.includes(v)):[];
+  const rows=[...byName,...byDef];
+  sres.style.top=$('.hsearch').offsetHeight+'px';
+  sres.innerHTML=rows.length?`<p class="scount">${rows.length} biais</p>`+rows.map(x=>{const f=FAM[x.fi];
+    return `<button class="srow" data-sb="${esc(x.b)}" style="--bg:${shade(f.c,.38)}"><b>${hl(x.b,v)}</b><small>${esc(f.name)} · ${esc(f.m[x.mi][0])}</small></button>`}).join('')
+    :`<p class="sempty">Aucun biais ne correspond à « ${esc(raw)} ». Essayez un autre mot, par exemple « mémoire », « groupe » ou « risque ».</p>`;
+  const first=sres.hidden;sres.hidden=false;
+  /* les résultats montent ensemble, d'un seul mouvement */
+  if(first)sres.animate([{transform:'translateY(40px)',opacity:0},{transform:'none',opacity:1}],{duration:D(380),easing:E});
+}
+sq.addEventListener('input',runSearch);
+sq.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();sq.blur()}});
+sclear.addEventListener('click',e=>{e.preventDefault();sq.value='';runSearch();sq.focus()});
+function openFromSearch(btn){
+  const b=btn.dataset.sb,{fi,mi}=where(b);F=fi;M=mi;sq.blur();
+  renderDet(b,getComputedStyle(btn).backgroundColor,false);push(home,btn,det);
+}
+
 /* ---- Quiz : une situation, quatre biais possibles ---- */
 const quizS=$('#quiz');
 const qnorm=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
@@ -688,6 +735,7 @@ function seeFiche(btn){
 
 $('#sw').addEventListener('click',e=>{
   const t=e.target.closest('button');if(!t||busy)return;
+  if(t.dataset.sb){openFromSearch(t);return}
   if(t.hasAttribute('data-quiz')){renderQuiz();push(home,t,quizS);return}
   if(t.dataset.qa!==undefined){answer(t);return}
   if(t.hasAttribute('data-qnext')){nextQ();return}
