@@ -62,7 +62,12 @@ button:focus-visible{outline:2px solid #fff;outline-offset:-4px}
 .block .q{font:500 11px var(--f-m);letter-spacing:.08em;text-transform:uppercase;opacity:.75}
 .block b{font:700 28px/1 var(--f-d);letter-spacing:-.02em;padding-right:64px}
 .block .n{position:absolute;right:20px;bottom:18px;font:500 12px var(--f-m);opacity:.85}
-.block .peek{font-size:12px;opacity:.72;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:64px}
+.block .peek{font-size:13px;line-height:1.35;opacity:.85;padding-right:64px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-wrap:pretty}
+.why{margin-top:12px;display:flex;flex-direction:column;gap:3px}
+.why span{font:500 10px var(--f-m);letter-spacing:.08em;text-transform:uppercase;opacity:.7}
+.fhead .why p,.why p{margin:0 0 8px;font:400 14px/1.45 var(--f-b);opacity:.95;text-wrap:pretty;text-transform:none;letter-spacing:0}
+.fhead .why p:last-child,.why p:last-child{margin-bottom:0}
+.why.wl{margin:0;padding:2px 20px 18px;background:var(--hd)}
 .block.motif b{font:700 18px/1.15 var(--f-d);letter-spacing:-.01em;text-wrap:balance}
 .block.motif .n{bottom:auto;top:14px}
 .block.motif .peek{padding-right:0}
@@ -206,31 +211,72 @@ button:focus-visible{outline:2px solid #fff;outline-offset:-4px}
 </div>
 <script>
 const FAM=[
- {name:"Trop d'information",c:'--info',q:"Ce que l'on remarque",m:[
+ {name:"Trop d'information",c:'--info',q:"Le cerveau trie",m:[
   ["Nous nous rappelons ce qui est déjà amorcé dans notre mémoire ou souvent répété",["Heuristique de disponibilité", "Biais attentionnel", "Effet de vérité illusoire", "Effet de simple exposition", "Effet du contexte", "Échec du rappel sans indice", "Biais mnésique lié à l'humeur", "Illusion de fréquence", "Phénomène de Baader-Meinhof", "Décalage empathique", "Biais d'omission", "Oubli de la fréquence de base"]],
   ["Le bizarre, le drôle, le frappant et l'anthropomorphique ressortent davantage",["Effet de bizarrerie", "Effet d'humour", "Effet von Restorff", "Effet de supériorité de l'image", "Effet de référence à soi", "Biais de négativité"]],
   ["On remarque lorsque quelque chose a changé",["Ancrage", "Conservatisme", "Effet de contraste", "Biais de distinction", "Effet de focus", "Effet de cadrage", "Illusion monétaire", "Loi de Weber-Fechner"]],
   ["Nous sommes attirés par les détails qui confirment nos croyances",["Biais de confirmation", "Biais de congruence", "Rationalisation post-achat", "Biais de soutien du choix", "Perception sélective", "Attente de l'expérimentateur", "Biais de l'expérimentateur", "Effet de l'observateur", "Biais d'attente", "Effet de l'autruche", "Validation subjective", "Effet de l'influence continue", "Réflexe de Semmelweis"]],
   ["Nous voyons les failles des autres plus facilement que les nôtres",["Biais de l'angle mort", "Cynisme naïf", "Réalisme naïf"]]]},
- {name:"Pas assez de sens",c:'--sens',q:"Ce que l'on comble",m:[
+ {name:"Pas assez de sens",c:'--sens',q:"Le cerveau complète",m:[
   ["Nous trouvons des histoires et des motifs même dans des données éparses",["Confabulation", "Illusion des séries", "Insensibilité à la taille du groupe", "Négligence des probabilités", "Erreur de la preuve anecdotique", "Illusion de la validité", "Erreur de l'homme masqué", "Illusion de la récence", "Erreur du parieur", "Erreur de la main chaude", "Corrélation illusoire", "Paréidolie"]],
   ["Nous comblons les manques avec des stéréotypes, des généralités et nos a priori",["Erreur d'attribution de groupe", "Erreur ultime d'attribution", "Stéréotypage", "Essentialisme", "Fixité fonctionnelle", "Effet d'hypocrisie morale", "Croyance en un monde juste", "Argument tiré d'un sophisme", "Biais d'autorité", "Biais d'automatisation", "Effet de mode", "Effet placebo"]],
   ["Ce que nous aimons ou connaissons nous paraît meilleur",["Biais d'homogénéité d'exogroupe", "Effet inter-races", "Favoritisme intragroupe", "Effet de halo", "Effet pom-pom girl", "Effet de positivité", "Pas inventé ici", "Dévaluation réactive", "Effet de la route familière"]],
   ["Nous simplifions les probabilités et les nombres",["Comptabilité mentale", "Erreur d'appel à la probabilité", "Biais de normalité", "Loi de Murphy", "Biais de la somme nulle", "Biais du survivant", "Effet de sous-additivité", "Effet de dénomination", "Nombre magique 7 ± 2"]],
   ["Nous croyons savoir ce que les autres pensent",["Illusion de transparence", "Malédiction de la connaissance", "Effet de projecteur", "Biais des incitations extrinsèques", "Illusion d'agence externe", "Illusion de connaissance asymétrique"]],
   ["Nous projetons nos croyances actuelles sur le passé et le futur",["Effet de télescopage", "Rétrospective de la vie en rose", "Biais rétrospectif", "Biais de résultat", "Chance morale", "Déclinisme", "Biais d'impact", "Biais de pessimisme", "Biais de planification", "Biais du gain de temps", "Biais pro-innovation", "Biais de projection", "Biais de retenue", "Biais de cohérence avec soi"]]]},
- {name:"Besoin d'agir vite",c:'--agir',q:"Ce que l'on décide",m:[
+ {name:"Besoin d'agir vite",c:'--agir',q:"Le cerveau tranche",m:[
   ["Pour agir, nous devons nous sentir capables et importants",["Biais d'excès de confiance", "Désirabilité sociale", "Effet « troisième personne »", "Effet de faux consensus", "Effet difficile-facile", "Effet Lac Wobegon", "Effet Dunning-Kruger", "Biais égocentrique", "Biais d'optimisme", "Effet Forer", "Effet Barnum", "Biais d'autocomplaisance", "Effet acteur-observateur", "Illusion de contrôle", "Supériorité illusoire", "Erreur fondamentale d'attribution", "Hypothèse d'attribution défensive", "Biais d'attribution des traits", "Justification de l'effort", "Compensation du risque", "Effet Peltzman"]],
   ["Pour rester concentrés, nous préférons l'immédiat et le proche",["Rabais hyperbolique", "Appel à la nouveauté", "Effet de la victime identifiable"]],
   ["Nous finissons ce dans quoi nous avons déjà investi",["Biais des coûts irrécupérables", "Escalade irrationnelle", "Escalade d'engagement", "Effet de génération d'information", "Aversion à la perte", "Effet IKEA", "Biais de la portion", "Biais du risque zéro", "Effet de disposition", "Effet de pseudo-certitude", "Effet de difficulté de traitement", "Effet de dotation", "Effet boomerang"]],
   ["Nous préservons notre autonomie et évitons l'irréversible",["Justification du système", "Psychologie inversée", "Réactance", "Effet de dominance asymétrique", "Biais de comparaison sociale", "Biais du statu quo"]],
   ["Nous préférons les options simples et complètes",["Effet d'ambiguïté", "Biais d'information", "Biais de croyance", "Effet « ça rime donc c'est bon »", "Effet abri à vélo", "Loi de futilité de Parkinson", "Erreur de conjonction", "Rasoir d'Ockham", "Effet moins-c'est-mieux"]]]},
- {name:"Que devons-nous retenir ?",c:'--mem',q:"Ce que l'on garde",m:[
+ {name:"Que devons-nous retenir ?",c:'--mem',q:"Le cerveau résume",m:[
   ["Nous modifions et renforçons certains souvenirs après coup",["Erreur d'attribution de la source", "Confusion de la source", "Cryptomnésie", "Faux souvenir", "Suggestibilité", "Effet d'espacement"]],
   ["Nous écartons les détails pour former des généralités",["Association implicite", "Stéréotype implicite", "Mémorisation stéréotypée", "Préjugé", "Biais de négativité", "Biais d'affaiblissement de l'affect"]],
   ["Nous réduisons événements et listes à leurs éléments clés",["Règle pic-fin", "Nivellement et affinement", "Effet de désinformation", "Effet de position dans une série", "Effet de la longueur de la liste", "Négligence de la durée", "Effet de la modalité", "Inhibition de la mémoire", "Effet de primauté", "Effet de récence", "Indiçage partiel", "Effet de position sérielle", "Effet du suffixe"]],
   ["Nous stockons les souvenirs selon la façon dont nous les avons vécus",["Distraction", "Effet test", "Effet au-suivant", "Effet Google", "Mot sur le bout de la langue", "Effet de profondeur du traitement"]]]}
 ];
+/* Pourquoi chaque courant et chaque motif existe : ce que fait le cerveau, à quoi ça sert, ce que ça coûte */
+const FWHY=[
+ {p:"Trop de signaux à la fois : le cerveau n'en laisse passer qu'une partie.",
+  w:"À chaque instant, nos sens captent bien plus d'informations que nous ne pouvons en traiter. Le cerveau fait donc le tri en permanence : il laisse passer ce qui est répété, frappant, nouveau ou conforme à ce qu'il croit déjà, et ignore le reste.",
+  r:"Ce filtre nous évite d'être submergés, mais il nous fait passer à côté d'informations importantes."},
+ {p:"Ce qu'on perçoit est incomplet : le cerveau comble les trous pour donner du sens.",
+  w:"Le monde nous arrive en morceaux : informations partielles, situations ambiguës, pensées des autres invisibles. Pour comprendre et réagir, le cerveau complète avec ce qu'il connaît déjà : motifs familiers, catégories, suppositions.",
+  r:"Le résultat paraît cohérent, mais une partie est inventée, et on la prend pour la réalité."},
+ {p:"Il faut décider sans tout savoir : le cerveau prend des raccourcis pour agir.",
+  w:"On doit souvent décider vite, sans avoir toutes les informations. Pour ne pas rester paralysés, le cerveau nous donne confiance en nous, privilégie l'immédiat, pousse à finir ce qui est commencé et préfère les options simples.",
+  r:"Ces raccourcis permettent d'agir, mais mènent à des décisions trop hâtives, trop sûres d'elles ou trop prudentes."},
+ {p:"On ne peut pas tout garder : le cerveau trie et réécrit nos souvenirs.",
+  w:"Notre mémoire ne peut pas tout stocker. Le cerveau garde l'essentiel, transforme les détails en règles générales, et reconstruit chaque souvenir quand on se le rappelle.",
+  r:"Cela économise de la place, mais nos souvenirs sont bien moins fidèles qu'on ne le croit."}
+];
+const MWHY=[[
+ ["Ce qu'on a vu récemment ou souvent revient plus facilement à l'esprit. Le cerveau s'en sert comme d'un indice : si ça vient vite, c'est sans doute fréquent ou important.","Une information simplement répétée ou très médiatisée finit par paraître vraie, courante ou probable."],
+ ["L'attention est limitée : elle va d'abord à ce qui sort de l'ordinaire, fait réagir ou nous concerne. L'inhabituel peut être une menace ou une opportunité, il vaut mieux le repérer.","On surestime ce qui est spectaculaire et on néglige ce qui est banal mais décisif."],
+ ["Le cerveau ne mesure pas les choses dans l'absolu : il les compare à un point de départ et réagit surtout aux différences. C'est bien plus rapide que de tout évaluer.","Le premier chiffre vu, la présentation ou un simple contraste changent notre jugement, alors que la réalité est la même."],
+ ["Vérifier ce qu'on croit déjà demande moins d'effort que tout remettre en question, et protège l'image qu'on a de soi. Le cerveau repère donc d'abord ce qui va dans son sens.","Nos croyances se renforcent toutes seules, même quand elles sont fausses."],
+ ["On voit les autres de l'extérieur, mais on se voit de l'intérieur, avec nos intentions et nos bonnes raisons. Ce qui ressemble chez eux à un biais nous paraît chez nous simplement raisonnable.","On se croit plus objectif que les autres, et on corrige rarement ses propres erreurs."]
+],[
+ ["Repérer des régularités a permis à nos ancêtres d'anticiper : un bruit dans les herbes, la saison des fruits. Le cerveau cherche donc des liens partout, même quand il n'y a que du hasard.","On voit des tendances, des causes ou des visages dans des données aléatoires ou trop peu nombreuses."],
+ ["Quand une information manque, le cerveau la remplace par ce qui est vrai d'habitude : catégories, règles générales, avis d'une autorité. On peut ainsi réagir sans tout connaître.","On juge une personne ou une situation sur sa catégorie plutôt que sur ce qu'elle est vraiment."],
+ ["Ce qui est familier a déjà fait ses preuves : on sait qu'il ne nous a pas fait de mal. Le cerveau lui fait donc plus confiance qu'à l'inconnu, et favorise son propre groupe.","On surévalue ses proches, ses idées et son camp, et on rejette ce qui vient d'ailleurs."],
+ ["Le cerveau n'est pas fait pour calculer : il raisonne en histoires, en catégories et en ordres de grandeur. Il remplace donc les calculs par des estimations rapides.","On se trompe sur les risques, les chances et les montants, surtout avec de très petits ou de très grands nombres."],
+ ["On n'a pas accès à l'esprit des autres. Pour deviner ce qu'ils pensent, le cerveau part de ce que nous pensons et ressentons nous-mêmes.","On se croit plus compris, plus transparent ou plus observé qu'on ne l'est, et on prête aux autres nos propres idées."],
+ ["On ne peut ni revivre le passé ni voir l'avenir. Le cerveau les reconstruit à partir de ce qu'on sait et ressent aujourd'hui.","Le passé paraît plus prévisible ou plus beau qu'il ne l'était, et l'avenir plus facile à prévoir qu'il ne le sera."]
+],[
+ ["Pour oser agir malgré l'incertitude, il faut croire qu'on en est capable et que nos choix comptent. Le cerveau entretient donc une image de soi plutôt flatteuse.","On surestime ses compétences et son contrôle, et on excuse ses erreurs par les circonstances tout en accusant le caractère des autres."],
+ ["Ce qui est proche dans le temps ou dans l'espace est plus sûr et plus concret. Le cerveau lui donne la priorité pour rester concentré sur ce qu'on peut faire maintenant.","On sacrifie le long terme à l'immédiat, et une seule victime nous touche plus que des milliers."],
+ ["Finir ce qu'on a commencé évite de gâcher l'effort déjà fourni et de désavouer ses choix. En plus, le cerveau ressent une perte plus fortement qu'un gain équivalent.","On s'acharne sur un projet perdu et on surévalue ce qu'on possède déjà."],
+ ["Garder sa liberté de choix et éviter les erreurs sans retour a longtemps été une question de survie. Le cerveau préfère donc ce qui existe déjà et résiste quand on veut lui imposer quelque chose.","On défend la situation actuelle même quand elle nous dessert, ou on fait l'inverse de ce qu'on nous demande par esprit de contradiction."],
+ ["Quand le temps manque, une option claire et connue permet d'agir tout de suite. Le cerveau évite donc l'incertitude et préfère ce qui est facile à comprendre.","On choisit l'option rassurante ou bien formulée plutôt que la meilleure, et on s'attarde sur les détails faciles."]
+],[
+ ["Un souvenir n'est pas une photo : chaque fois qu'on se le rappelle, le cerveau le reconstruit et peut y intégrer des informations nouvelles. Cela permet de le mettre à jour.","On peut se souvenir avec certitude de choses fausses, ou oublier d'où vient une idée."],
+ ["Garder chaque détail coûterait trop cher. Le cerveau résume ce qu'on a vécu en règles et en catégories réutilisables.","Ces généralités deviennent des préjugés, et les mauvais souvenirs s'adoucissent plus vite que les bons."],
+ ["Le cerveau ne retient pas un événement ou une liste en entier : il garde les moments forts, le début et la fin.","On juge une expérience entière sur quelques instants et on oublie le milieu."],
+ ["Ce qu'on retient dépend de l'attention, de l'effort et du contexte au moment où on l'apprend. Le cerveau garde mieux ce qu'il a travaillé et lâche ce qu'il sait pouvoir retrouver ailleurs.","On oublie ce qu'on a appris distraitement, ou ce qu'on sait pouvoir chercher sur Internet."]
+]];
+
 const DEF={
  "Heuristique de disponibilité":["On juge un événement plus probable quand des exemples nous viennent facilement à l'esprit.","Après un reportage sur un crash, on surestime le risque de prendre l'avion."],
  "Effet de simple exposition":["On apprécie davantage ce qu'on a déjà vu plusieurs fois, sans raison objective.","Une marque croisée partout finit par paraître fiable."],
@@ -437,14 +483,15 @@ const count=f=>f.m.reduce((a,m)=>a+m[1].length,0);
 home.querySelector('.blocks').innerHTML=`<button class="block quizb mv" data-quiz style="--bg:#241A45">
   <span class="q">S'entraîner</span><b>Quiz : quel est ce biais ?</b><span class="qgo">Jouer ›</span></button>`+
   FAM.map((f,i)=>`<button class="block mv" data-f="${i}" style="--bg:var(${f.c})">
-  <span class="q">${esc(f.q)}</span><b>${esc(f.name)}</b><span class="peek">${f.m.length} motifs</span><span class="n">${count(f)} biais</span></button>`).join('');
+  <span class="q">${esc(f.q)}</span><b>${esc(f.name)}</b><span class="peek">${esc(FWHY[i].p)}</span><span class="n">${count(f)} biais</span></button>`).join('');
 
 /* ---- Niveau 2 : motifs du courant, en gros blocs ---- */
+function whyBox(o,inList){return `<div class="why in${inList?' wl':''}"><span>Pourquoi ces biais ?</span><p>${esc(o.w)}</p><span>Le revers</span><p>${esc(o.r)}</p></div>`}
 let F=0,M=0;
 function renderFam(fi){
   F=fi;const f=FAM[fi],n=f.m.length;
   fam.style.setProperty('--hd',hd(f.c));
-  fam.innerHTML=`<div class="fhead mv"><button class="back in" data-back>‹ Courants</button><h3>${esc(f.name)}</h3><p class="in">${count(f)} biais · ${n} motifs</p></div>
+  fam.innerHTML=`<div class="fhead mv"><button class="back in" data-back>‹ Courants</button><h3>${esc(f.name)}</h3><p class="in">${count(f)} biais · ${n} motifs</p>${whyBox(FWHY[fi])}</div>
   <div class="blocks">${f.m.map((m,i)=>{const t=.12+.72*i/(n-1);
     return `<button class="block motif mv in${lightAt(t)?' light':''}" data-m="${i}" style="--bg:${shade(f.c,t)}" data-t="${t}">
       <span class="n">${m[1].length}</span><b>${esc(m[0])}</b></button>`}).join('')}</div>`;
@@ -455,7 +502,7 @@ function renderMot(mi){
   M=mi;const f=FAM[F],m=f.m[mi],N=m[1].length;
   mot.style.setProperty('--hd',hd(f.c));mot.style.setProperty('--end',shade(f.c,1));
   mot.innerHTML=`<div class="fhead mv"><button class="back in" data-back>‹ ${esc(f.name)}</button><h3>${esc(m[0])}</h3><p class="in">${N} biais</p></div>
-  <div class="list">${m[1].map((b,k)=>{const t=.1+.85*k/Math.max(1,N-1);
+  <div class="list">${whyBox({w:MWHY[F][mi][0],r:MWHY[F][mi][1]},1)}${m[1].map((b,k)=>{const t=.1+.85*k/Math.max(1,N-1);
     return `<button class="row st mv in${lightAt(t)?' light':''}" data-b="${esc(b)}" style="--bg:${shade(f.c,t)};--k:${k}"><span>${esc(b)}</span></button>`}).join('')}<div class="spacer"></div></div>`;
   const list=mot.querySelector('.list'),sts=$$('.st',list);
   requestAnimationFrame(()=>{
@@ -488,11 +535,11 @@ function fillSources(n){
   box.innerHTML=`
    <h5 class="more">Pour aller plus loin</h5>
    ${doms.length?`<section><h4>Domaines de recherche</h4>
-     <p class="mech">Nombre d'études en accès libre sur ce biais dans chaque domaine${s.total>s.sample?` (parmi les ${nf.format(s.sample)} plus citées)`:''}. Touchez un domaine pour voir son étude la plus citée.</p>
+     <p class="mech">Parmi les études retenues ci-dessous, nombre de celles qui relèvent de chaque domaine. Touchez un domaine pour voir son étude la plus citée.</p>
      <div class="doms">${doms.map(([k,v],i)=>`<button class="dom" data-dom="${k}" aria-pressed="${i===0}">${DOMS[k]}<span>${nf.format(v.n)}</span></button>`).join('')}</div>
      <div class="domp papers">${cite(doms[0][1].p)}</div></section>`:''}
    <section><h4>Sources scientifiques</h4>
-     ${s&&s.papers.length?`<p class="mech">${s.total?`<b>${nf.format(s.total)} études</b> en accès libre portent sur ce biais dans Semantic Scholar. `:''}Les plus citées :</p>
+     ${s&&s.papers.length?`<p class="mech">${s.total>1?`<b>${nf.format(s.total)} études</b> en accès libre citent explicitement ce biais dans leur titre ou leur résumé. `:''}Les plus citées :</p>
      <div class="papers">${s.papers.map(cite).join('')}</div>`:`<p class="mech">Aucune étude en accès libre trouvée sous ce nom ; les liens ci-dessous ouvrent une recherche plus large.</p>`}
      <div class="links"><a class="lnk" href="${esc(scholar)}" target="_blank" rel="noopener">Toutes les études sur Google Scholar ›</a>
      ${wiki?`<a class="lnk" href="${esc(wiki)}" target="_blank" rel="noopener">Article Wikipédia ›</a>`:''}</div>
