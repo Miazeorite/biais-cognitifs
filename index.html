@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Courants</title>
+<meta name="description" content="Les 186 biais cognitifs du Cognitive Bias Codex, rangés en 4 courants et 20 motifs.">
+<meta name="theme-color" content="#130E22">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Courants">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Version application : l'écran entier est l'app, sans cadre ni panneau d'explications. */
+:root{
+  --page:#ECEEF1; --panel:#FFFFFF; --text:#151922; --muted:#586172; --line:#D6DAE1; --accent:#6A45D8;
+  --ink:#130E22; --on:#FFFFFF;
+  /* les 4 courants, palette cyan, bleu, violet, rose : même saturation, assombrie vers un violet profond */
+  --info:#1792B0; --sens:#3C6EE6; --agir:#7A4FE3; --mem:#D04E95; --deep:#1A1035;
+  --f-d:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --f-b:'Instrument Sans','Segoe UI',system-ui,sans-serif;
+  --f-m:'JetBrains Mono',ui-monospace,Consolas,monospace;
+}
+
+html,body{margin:0;height:100%;background:var(--ink);color:var(--on);overscroll-behavior:none}
+body{font-family:var(--f-b);font-size:15px;line-height:1.5;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left;-webkit-user-select:none;user-select:none}
+button:focus-visible{outline:2px solid #fff;outline-offset:-4px}
+[hidden]{display:none!important}
+/* L'app occupe tout l'écran ; sur ordinateur, elle garde une largeur de téléphone, centrée */
+#sw{position:fixed;inset:0;overflow:hidden;background:var(--ink);color:var(--on);isolation:isolate}
+@media (min-width:600px){#sw{left:calc(50% - 215px);right:auto;width:430px;box-shadow:0 0 0 1px rgba(255,255,255,.06),0 30px 80px rgba(0,0,0,.5)}}
+.vp{position:absolute;inset:0;overflow:hidden}
+.scr{position:absolute;inset:0;display:flex;flex-direction:column;--top:calc(env(safe-area-inset-top, 0px) + 14px);--bot:env(safe-area-inset-bottom, 0px)}
+
+/* Gros blocs empilés : même composant pour les courants et pour les motifs */
+.blocks{flex:1;display:flex;flex-direction:column;min-height:0}
+.block{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-end;gap:4px;padding:14px 20px 16px;
+  background:var(--bg);position:relative;box-shadow:0 -1px 0 rgba(0,0,0,.16);overflow:hidden}
+#home .block:first-child{padding-top:calc(var(--top) + 10px)}
+.block .q{font:500 11px var(--f-m);letter-spacing:.08em;text-transform:uppercase;opacity:.75}
+.block b{font:700 28px/1 var(--f-d);letter-spacing:-.02em;padding-right:64px}
+.block .n{position:absolute;right:20px;bottom:18px;font:500 12px var(--f-m);opacity:.85}
+.block .peek{font-size:12px;opacity:.72;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:64px}
+.block.motif b{font:700 18px/1.15 var(--f-d);letter-spacing:-.01em;text-wrap:balance}
+.block.motif .n{bottom:auto;top:14px}
+.block.motif .peek{padding-right:0}
+.block:hover{filter:brightness(1.07)}
+.light{color:#10161E}
+
+/* En-tête d'un niveau ouvert */
+.fhead{flex:none;padding:calc(var(--top) + 2px) 20px 14px;background:var(--hd)}
+.back{font:500 13px var(--f-b);opacity:.8;display:inline-flex;gap:6px;align-items:center;padding:4px 0}
+.back:hover{opacity:1}
+.fhead h3{font:700 28px/1.02 var(--f-d);margin:6px 0 4px;letter-spacing:-.02em;text-wrap:balance}
+#mot .fhead h3{font-size:21px;line-height:1.15}
+.fhead p{margin:0;font:500 11px var(--f-m);letter-spacing:.06em;text-transform:uppercase;opacity:.75}
+
+/* Liste des biais d'un motif, avec effondrement au défilement */
+.list{flex:1;overflow:auto;scrollbar-width:none;position:relative;overscroll-behavior:contain;background:var(--end)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;box-sizing:border-box;min-height:58px;padding:10px 20px;
+  background:var(--bg);font-size:15.5px;font-weight:600}
+.row::after{content:"›";opacity:.6;font-size:18px;font-weight:400}
+.row span{flex:1}
+.st{position:sticky;top:calc(min(var(--k),12) * 4px);box-shadow:0 -1px 0 rgba(0,0,0,.14);transform-origin:50% 0;transform:scale(calc(1 - var(--p,0) * .04))}
+.st > *, .row.st::after{opacity:calc(1 - var(--p,0) * 1.8)}
+.spacer{height:65%}
+
+/* Fiche */
+/* Fiche : bandeau dans la couleur de la ligne touchée, puis une feuille claire pour lire */
+#det{background:var(--bg)}
+.dwrap{flex:1;overflow:auto;scrollbar-width:none;display:flex;flex-direction:column}
+.dhead{padding:calc(var(--top) + 2px) 20px 34px;display:flex;flex-direction:column;gap:8px}
+.crumb{font:500 10.5px/1.4 var(--f-m);letter-spacing:.08em;text-transform:uppercase;opacity:.78}
+.dhead h3{font:700 34px/1.02 var(--f-d);letter-spacing:-.02em;margin:0;text-wrap:balance}
+.sheet{flex:1;margin-top:-18px;border-radius:22px 22px 0 0;background:#F7F5FB;color:#171326;padding:22px 20px 32px;display:flex;flex-direction:column;gap:22px}
+.sheet h4{margin:0 0 6px;font:500 10.5px var(--f-m);letter-spacing:.09em;text-transform:uppercase;color:var(--lab)}
+.sheet .def{margin:0;font:500 18px/1.42 var(--f-b);text-wrap:pretty}
+.sheet .todo{margin:0;font-size:14.5px;color:#5D6675}
+.sheet blockquote{margin:0;padding:12px 14px;background:#fff;border-radius:12px;font-size:15px;line-height:1.5;color:#2A313C;box-shadow:0 1px 2px rgba(20,26,34,.06)}
+.sheet .mech{margin:0;font-size:14.5px;line-height:1.5;color:#3A424F}
+.sheet .mech b{color:#141A22;font-weight:600}
+.sibs{display:flex;flex-direction:column;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(20,26,34,.06)}
+.sib{display:flex;align-items:center;gap:10px;padding:12px 14px;font-size:14.5px;font-weight:500;border-top:1px solid #ECEEF2}
+.sib:first-child{border-top:0}
+.sib span{flex:1}
+.sib::after{content:"›";color:#9AA2AE;font-size:17px}
+.sib:hover{background:#F1F3F6}
+.sib:focus-visible{outline:2px solid var(--lab);outline-offset:-2px}
+.srcl{margin:0;font-size:12px;line-height:1.45;color:#6B6480}
+.srcl a{color:var(--lab);text-underline-offset:2px}
+
+/* Bas de l'écran : on laisse la place à la barre du téléphone */
+#home .block:last-child,#fam .block:last-child{padding-bottom:calc(16px + var(--bot))}
+.sheet{padding-bottom:calc(32px + var(--bot))}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div id="sw">
+  <div class="vp" id="vp">
+    <section class="scr" id="home"><div class="blocks"></div></section>
+    <section class="scr" id="fam" hidden></section>
+    <section class="scr" id="mot" hidden></section>
+    <section class="scr" id="det" hidden></section>
+  </div>
+</div>
+<script>
+const FAM=[
+ {name:"Trop d'information",c:'--info',q:"Ce que l'on remarque",m:[
+  ["Nous nous rappelons ce qui est déjà amorcé dans notre mémoire ou souvent répété",["Heuristique de disponibilité", "Biais attentionnel", "Effet de vérité illusoire", "Effet de simple exposition", "Effet du contexte", "Échec du rappel sans indice", "Biais mnésique lié à l'humeur", "Illusion de fréquence", "Phénomène de Baader-Meinhof", "Décalage empathique", "Biais d'omission", "Oubli de la fréquence de base"]],
+  ["Le bizarre, le drôle, le frappant et l'anthropomorphique ressortent davantage",["Effet de bizarrerie", "Effet d'humour", "Effet von Restorff", "Effet de supériorité de l'image", "Effet de référence à soi", "Biais de négativité"]],
+  ["On remarque lorsque quelque chose a changé",["Ancrage", "Conservatisme", "Effet de contraste", "Biais de distinction", "Effet de focus", "Effet de cadrage", "Illusion monétaire", "Loi de Weber-Fechner"]],
+  ["Nous sommes attirés par les détails qui confirment nos croyances",["Biais de confirmation", "Biais de congruence", "Rationalisation post-achat", "Biais de soutien du choix", "Perception sélective", "Attente de l'expérimentateur", "Biais de l'expérimentateur", "Effet de l'observateur", "Biais d'attente", "Effet de l'autruche", "Validation subjective", "Effet de l'influence continue", "Réflexe de Semmelweis"]],
+  ["Nous voyons les failles des autres plus facilement que les nôtres",["Biais de l'angle mort", "Cynisme naïf", "Réalisme naïf"]]]},
+ {name:"Pas assez de sens",c:'--sens',q:"Ce que l'on comble",m:[
+  ["Nous trouvons des histoires et des motifs même dans des données éparses",["Confabulation", "Illusion des séries", "Insensibilité à la taille du groupe", "Négligence des probabilités", "Erreur de la preuve anecdotique", "Illusion de la validité", "Erreur de l'homme masqué", "Illusion de la récence", "Erreur du parieur", "Erreur de la main chaude", "Corrélation illusoire", "Paréidolie"]],
+  ["Nous comblons les manques avec des stéréotypes, des généralités et nos a priori",["Erreur d'attribution de groupe", "Erreur ultime d'attribution", "Stéréotypage", "Essentialisme", "Fixité fonctionnelle", "Effet d'hypocrisie morale", "Croyance en un monde juste", "Argument tiré d'un sophisme", "Biais d'autorité", "Biais d'automatisation", "Effet de mode", "Effet placebo"]],
+  ["Ce que nous aimons ou connaissons nous paraît meilleur",["Biais d'homogénéité d'exogroupe", "Effet inter-races", "Favoritisme intragroupe", "Effet de halo", "Effet pom-pom girl", "Effet de positivité", "Pas inventé ici", "Dévaluation réactive", "Effet de la route familière"]],
+  ["Nous simplifions les probabilités et les nombres",["Comptabilité mentale", "Erreur d'appel à la probabilité", "Biais de normalité", "Loi de Murphy", "Biais de la somme nulle", "Biais du survivant", "Effet de sous-additivité", "Effet de dénomination", "Nombre magique 7 ± 2"]],
+  ["Nous croyons savoir ce que les autres pensent",["Illusion de transparence", "Malédiction de la connaissance", "Effet de projecteur", "Biais des incitations extrinsèques", "Illusion d'agence externe", "Illusion de connaissance asymétrique"]],
+  ["Nous projetons nos croyances actuelles sur le passé et le futur",["Effet de télescopage", "Rétrospective de la vie en rose", "Biais rétrospectif", "Biais de résultat", "Chance morale", "Déclinisme", "Biais d'impact", "Biais de pessimisme", "Biais de planification", "Biais du gain de temps", "Biais pro-innovation", "Biais de projection", "Biais de retenue", "Biais de cohérence avec soi"]]]},
+ {name:"Besoin d'agir vite",c:'--agir',q:"Ce que l'on décide",m:[
+  ["Pour agir, nous devons nous sentir capables et importants",["Biais d'excès de confiance", "Désirabilité sociale", "Effet « troisième personne »", "Effet de faux consensus", "Effet difficile-facile", "Effet Lac Wobegon", "Effet Dunning-Kruger", "Biais égocentrique", "Biais d'optimisme", "Effet Forer", "Effet Barnum", "Biais d'autocomplaisance", "Effet acteur-observateur", "Illusion de contrôle", "Supériorité illusoire", "Erreur fondamentale d'attribution", "Hypothèse d'attribution défensive", "Biais d'attribution des traits", "Justification de l'effort", "Compensation du risque", "Effet Peltzman"]],
+  ["Pour rester concentrés, nous préférons l'immédiat et le proche",["Rabais hyperbolique", "Appel à la nouveauté", "Effet de la victime identifiable"]],
+  ["Nous finissons ce dans quoi nous avons déjà investi",["Biais des coûts irrécupérables", "Escalade irrationnelle", "Escalade d'engagement", "Effet de génération d'information", "Aversion à la perte", "Effet IKEA", "Biais de la portion", "Biais du risque zéro", "Effet de disposition", "Effet de pseudo-certitude", "Effet de difficulté de traitement", "Effet de dotation", "Effet boomerang"]],
+  ["Nous préservons notre autonomie et évitons l'irréversible",["Justification du système", "Psychologie inversée", "Réactance", "Effet de dominance asymétrique", "Biais de comparaison sociale", "Biais du statu quo"]],
+  ["Nous préférons les options simples et complètes",["Effet d'ambiguïté", "Biais d'information", "Biais de croyance", "Effet « ça rime donc c'est bon »", "Effet abri à vélo", "Loi de futilité de Parkinson", "Erreur de conjonction", "Rasoir d'Ockham", "Effet moins-c'est-mieux"]]]},
+ {name:"Que devons-nous retenir ?",c:'--mem',q:"Ce que l'on garde",m:[
+  ["Nous modifions et renforçons certains souvenirs après coup",["Erreur d'attribution de la source", "Confusion de la source", "Cryptomnésie", "Faux souvenir", "Suggestibilité", "Effet d'espacement"]],
+  ["Nous écartons les détails pour former des généralités",["Association implicite", "Stéréotype implicite", "Mémorisation stéréotypée", "Préjugé", "Biais de négativité", "Biais d'affaiblissement de l'affect"]],
+  ["Nous réduisons événements et listes à leurs éléments clés",["Règle pic-fin", "Nivellement et affinement", "Effet de désinformation", "Effet de position dans une série", "Effet de la longueur de la liste", "Négligence de la durée", "Effet de la modalité", "Inhibition de la mémoire", "Effet de primauté", "Effet de récence", "Indiçage partiel", "Effet de position sérielle", "Effet du suffixe"]],
+  ["Nous stockons les souvenirs selon la façon dont nous les avons vécus",["Distraction", "Effet test", "Effet au-suivant", "Effet Google", "Mot sur le bout de la langue", "Effet de profondeur du traitement"]]]}
+];
+const DEF={
+ "Heuristique de disponibilité":["On juge un événement plus probable quand des exemples nous viennent facilement à l'esprit.","Après un reportage sur un crash, on surestime le risque de prendre l'avion."],
+ "Effet de simple exposition":["On apprécie davantage ce qu'on a déjà vu plusieurs fois, sans raison objective.","Une marque croisée partout finit par paraître fiable."],
+ "Effet von Restorff":["Un élément qui se distingue de ceux qui l'entourent est mieux mémorisé.","Dans une liste de courses, le seul article écrit en rouge est celui qu'on n'oublie pas."],
+ "Biais de négativité":["Les informations négatives pèsent plus que les positives de même intensité.","Une critique sur dix compliments occupe toute la soirée."],
+ "Ancrage":["Le premier chiffre entendu sert de point de référence aux estimations suivantes.","Un prix barré à 200 € rend le prix de 120 € raisonnable."],
+ "Effet de cadrage":["La même information provoque des choix différents selon sa formulation.","« 90 % de survie » rassure plus que « 10 % de mortalité »."],
+ "Biais de confirmation":["On cherche, retient et interprète ce qui confirme ce qu'on pense déjà.","On ne lit que les articles qui donnent raison à notre opinion."],
+ "Biais de l'angle mort":["On repère les biais chez les autres, rarement chez soi.","« Lui est influencé par la pub. Moi, non. »"],
+ "Erreur du parieur":["On croit qu'un événement aléatoire devient plus probable s'il ne s'est pas produit depuis longtemps.","Après cinq « pile », on parie sur « face »."],
+ "Paréidolie":["On perçoit une forme familière, souvent un visage, dans un stimulus aléatoire.","Un visage dans une prise électrique ou un nuage."],
+ "Effet de halo":["Une qualité perçue chez quelqu'un colore le jugement de ses autres qualités.","Un candidat élégant paraît aussi plus compétent."],
+ "Effet de mode":["On adopte une idée ou un comportement parce que beaucoup le font déjà.","Choisir le restaurant plein plutôt que celui d'à côté, vide."],
+ "Biais du survivant":["On tire des conclusions des seuls cas qui ont « survécu » à une sélection, en oubliant les autres.","« Ils ont arrêté leurs études et sont devenus millionnaires » : on ne voit pas tous ceux pour qui ça n'a pas marché."],
+ "Malédiction de la connaissance":["Une fois qu'on sait quelque chose, on a du mal à imaginer ne pas le savoir.","L'expert qui explique avec un jargon que personne ne suit."],
+ "Effet de faux consensus":["On surestime la part des gens qui pensent comme nous.","« Tout le monde trouve cette réunion inutile. »"],
+ "Biais rétrospectif":["Après coup, un événement semble avoir été prévisible.","« Je le savais depuis le début. »"],
+ "Biais de planification":["On sous-estime le temps et le coût d'une tâche, même avec l'expérience de retards passés.","Le chantier prévu pour trois semaines dure trois mois."],
+ "Effet Dunning-Kruger":["Les moins compétents dans un domaine tendent à surestimer leur niveau.","Après une vidéo de dix minutes, on se sent prêt à débattre avec un spécialiste."],
+ "Erreur fondamentale d'attribution":["On explique le comportement des autres par leur personnalité plutôt que par la situation.","Le conducteur qui nous coupe la route est « un idiot », pas quelqu'un en retard pour l'hôpital."],
+ "Biais d'optimisme":["On pense être moins exposé que les autres aux événements négatifs.","« Les accidents, ça n'arrive qu'aux autres. »"],
+ "Rabais hyperbolique":["On préfère une petite récompense immédiate à une plus grande, plus tard.","Repousser l'épargne pour s'offrir quelque chose aujourd'hui."],
+ "Biais des coûts irrécupérables":["On continue un projet parce qu'on y a déjà investi, même s'il n'en vaut plus la peine.","Finir un film ennuyeux parce que la place a été payée."],
+ "Aversion à la perte":["Perdre fait plus mal que gagner la même chose ne fait plaisir.","Refuser un pari à 50/50 où l'on gagne 120 € ou perd 100 €."],
+ "Effet IKEA":["On accorde plus de valeur à ce qu'on a fabriqué soi-même.","L'étagère montée de ses mains paraît plus belle que celle du magasin."],
+ "Biais du statu quo":["On préfère que les choses restent comme elles sont.","Garder le même forfait téléphonique, même plus cher."],
+ "Loi de futilité de Parkinson":["On passe plus de temps sur les sujets simples que sur les sujets importants mais complexes.","Une heure de réunion sur la couleur du local à vélos, cinq minutes sur le budget."],
+ "Faux souvenir":["On se souvient d'événements qui ne se sont pas produits, ou autrement qu'ils se sont produits.","Être certain d'avoir fermé la porte à clé."],
+ "Règle pic-fin":["On juge une expérience surtout sur son moment le plus intense et sur sa fin.","Des vacances moyennes laissent un bon souvenir grâce au dernier jour."],
+ "Effet Google":["On retient moins ce qu'on sait pouvoir retrouver en ligne.","On ne connaît plus aucun numéro de téléphone par cœur."],
+ "Biais attentionnel":["Notre perception est orientée par ce qui capte déjà notre attention, au point de négliger le reste.","Une personne qui essaie d'arrêter de fumer repère tous les cendriers et tous les fumeurs dans la rue."],
+ "Effet de vérité illusoire":["Une information fausse finit par paraître vraie à force d'être entendue de façon répétée.","« On n'utilise que 10 % de son cerveau » : on l'a tellement entendu qu'on finit par y croire."],
+ "Effet du contexte":["L'environnement dans lequel on perçoit ou apprend quelque chose influence la façon dont on le perçoit et dont on s'en souvient.","Les plongeurs qui apprennent une liste de mots sous l'eau s'en souviennent mieux sous l'eau que sur la plage."],
+ "Échec du rappel sans indice":["On n'arrive pas à se rappeler une information tant qu'il manque l'indice (lieu, état, mot) présent au moment où on l'a apprise.","Impossible de se rappeler pourquoi on est entré dans la cuisine, jusqu'à ce qu'on retourne dans le salon."],
+ "Biais mnésique lié à l'humeur":["On se rappelle plus facilement les souvenirs qui correspondent à son humeur du moment.","Un jour de déprime, ce sont surtout les échecs passés qui reviennent en tête."],
+ "Illusion de fréquence":["Après avoir remarqué quelque chose pour la première fois, on a l'impression de le croiser partout.","Après avoir acheté une Clio rouge, on a l'impression qu'il y en a à chaque coin de rue."],
+ "Phénomène de Baader-Meinhof":["Autre nom de l'illusion de fréquence : une chose qu'on vient de découvrir semble soudain apparaître sans cesse.","On découvre un mot nouveau le matin, et on le lit trois fois dans la journée."],
+ "Décalage empathique":["On sous-estime à quel point un état émotionnel ou physique (faim, peur, colère) influence nos choix ou ceux des autres quand on ne le vit pas soi-même.","Au calme, on est sûr de garder son sang-froid ; en pleine dispute, on dit des choses qu'on regrette."],
+ "Biais d'omission":["On juge une action nuisible plus sévèrement qu'une inaction qui cause le même tort.","Des parents hésitent à vacciner leur enfant : un effet secondaire leur paraît plus grave que le risque de la maladie qu'ils laissent courir."],
+ "Oubli de la fréquence de base":["On ignore la fréquence générale d'un phénomène pour ne retenir que les informations propres au cas particulier.","Un test fiable à 99 % est positif pour une maladie très rare : on se croit malade, alors que la plupart des tests positifs sont de faux positifs."],
+ "Effet de bizarrerie":["Les éléments étranges ou insolites seraient mieux mémorisés que les éléments ordinaires, un effet dont l'existence reste discutée.","« Un chat qui joue du violon sur un toit » se retient mieux que « un chat qui dort sur un toit »."],
+ "Effet d'humour":["Les éléments drôles sont plus facilement retenus que ceux qui ne le sont pas.","On se souvient de la blague du professeur bien plus que du reste de son cours."],
+ "Effet de supériorité de l'image":["On retient mieux les images que les mots.","Les panneaux routiers utilisent des pictogrammes plutôt que des phrases."],
+ "Effet de référence à soi":["On retient mieux une information quand on peut la relier à soi-même.","On retient mieux le mot « généreux » quand on s'est demandé s'il nous décrit."],
+ "Conservatisme":["On révise insuffisamment ses croyances face à de nouvelles preuves, en accordant trop de poids à ce que l'on pensait déjà.","Un investisseur ne révise que très peu ses prévisions après des résultats trimestriels désastreux."],
+ "Effet de contraste":["La perception d'une chose est renforcée ou atténuée par la comparaison avec ce qu'on vient de voir juste avant ou à côté.","Après avoir tenu un seau d'eau glacée, l'eau tiède paraît chaude."],
+ "Biais de distinction":["Deux options semblent plus différentes quand on les compare côte à côte que lorsqu'on les évalue séparément.","En magasin, deux téléviseurs côte à côte semblent très différents ; une fois chez soi, on ne verrait pas la différence."],
+ "Effet de focus":["On accorde trop d'importance à un seul aspect d'une situation, ce qui fausse l'estimation de ses conséquences.","On pense qu'on serait bien plus heureux en vivant au soleil, en oubliant tout le reste de la vie quotidienne."],
+ "Illusion monétaire":["On raisonne sur la valeur nominale de l'argent plutôt que sur son pouvoir d'achat réel, en oubliant l'inflation.","Une hausse de salaire de 2 % paraît une bonne nouvelle, même quand l'inflation est de 4 %."],
+ "Loi de Weber-Fechner":["On perçoit les différences de manière relative : un même écart semble grand sur une petite quantité et minime sur une grande.","Économiser 10 € sur un livre à 20 € paraît énorme ; sur une voiture à 20 000 €, c'est imperceptible."],
+ "Biais de congruence":["On teste surtout son hypothèse de départ au lieu de chercher à vérifier les hypothèses concurrentes.","Pour vérifier qu'une plante a besoin de soleil, on la met au soleil, sans jamais en mettre une autre à l'ombre pour comparer."],
+ "Rationalisation post-achat":["Après un achat, on se persuade que c'était le bon choix, même s'il était trop cher ou défectueux.","« Ce téléphone était cher, mais l'appareil photo est vraiment exceptionnel. »"],
+ "Biais de soutien du choix":["Après une décision, on attribue rétroactivement des qualités à l'option choisie et des défauts à celles qu'on a écartées.","Des années plus tard, on se souvient de l'école qu'on a choisie comme bien meilleure que celle qu'on a refusée."],
+ "Perception sélective":["On remarque moins, et on oublie plus vite, ce qui contredit nos croyances ou nous met mal à l'aise.","Lors d'un match, les supporters de chaque équipe voient surtout les fautes de l'équipe adverse."],
+ "Attente de l'expérimentateur":["Les attentes d'un chercheur influencent, sans qu'il le veuille, le comportement des participants ou l'interprétation des résultats.","Le cheval Hans semblait savoir compter : il réagissait en fait aux signes involontaires de son maître."],
+ "Biais de l'expérimentateur":["Un chercheur tend à croire et à publier les données qui confirment ses attentes, et à écarter celles qui les contredisent.","Un chercheur relance l'analyse quand les résultats déçoivent, mais jamais quand ils confirment son hypothèse."],
+ "Effet de l'observateur":["Le simple fait d'observer une situation ou des personnes modifie ce qui est observé.","Des salariés travaillent plus vite le jour où un consultant vient les observer."],
+ "Biais d'attente":["On interprète les résultats d'une observation dans le sens de ce que l'on s'attendait à trouver.","Un dégustateur trouve un vin meilleur quand on lui dit qu'il coûte cher."],
+ "Effet de l'autruche":["On évite de s'exposer à une information utile mais potentiellement négative, pour s'épargner un inconfort.","Quand la Bourse baisse, beaucoup d'épargnants évitent de consulter leur compte."],
+ "Validation subjective":["On tient une affirmation pour vraie dès qu'elle a un sens personnel pour nous.","On trouve son horoscope étonnamment juste parce qu'une phrase fait écho à sa semaine."],
+ "Effet de l'influence continue":["Une information erronée continue d'influencer notre raisonnement même après avoir été corrigée.","Même après un démenti officiel, la rumeur sur l'origine d'un incendie continue d'orienter les conversations."],
+ "Réflexe de Semmelweis":["On rejette une découverte ou une preuve nouvelle parce qu'elle contredit les normes et les idées établies.","Au XIXᵉ siècle, les médecins rejettent l'idée de se laver les mains entre deux accouchements, pourtant prouvée par Semmelweis."],
+ "Cynisme naïf":["On s'attend à ce que les autres soient plus égoïstes ou intéressés qu'ils ne le sont réellement.","« S'il est gentil avec moi, c'est forcément qu'il veut quelque chose. »"],
+ "Réalisme naïf":["On croit voir le monde de façon objective, et que ceux qui ne sont pas d'accord sont mal informés, irrationnels ou biaisés.","« Je vois les choses telles qu'elles sont ; s'il pense le contraire, c'est qu'il n'a pas toutes les informations. »"],
+ "Confabulation":["La mémoire produit, sans intention de mentir, des souvenirs inventés, déformés ou mal interprétés.","Interrogé sur un choix qu'il n'a pas fait, un participant justifie sans hésiter une décision qu'on lui attribue à tort."],
+ "Illusion des séries":["On voit des séries ou des regroupements significatifs dans ce qui n'est que le fruit du hasard.","Pendant la guerre, les Londoniens croyaient voir des zones visées exprès par les bombes, alors que les impacts étaient répartis au hasard."],
+ "Insensibilité à la taille du groupe":["On juge la probabilité d'un résultat sans tenir compte de la taille de l'échantillon, alors que les petits échantillons varient beaucoup plus.","Une petite maternité enregistre plus souvent des journées avec 60 % de garçons qu'une grande, mais on pense que c'est aussi probable dans les deux."],
+ "Négligence des probabilités":["Face à l'incertitude, on ignore les probabilités : les petits risques sont soit négligés, soit largement surestimés.","Après un attentat, on renonce à l'avion pour la voiture, qui est pourtant bien plus dangereuse."],
+ "Erreur de la preuve anecdotique":["On tire une conclusion générale à partir d'un témoignage ou d'une expérience personnelle isolée.","« Mon grand-père a fumé toute sa vie et il a vécu jusqu'à 95 ans. »"],
+ "Illusion de la validité":["On surestime sa capacité à prédire un résultat dès que les données racontent une histoire cohérente.","Un recruteur reste sûr de son jugement après un entretien de vingt minutes, malgré des prédictions souvent fausses."],
+ "Erreur de l'homme masqué":["On conclut à tort que deux choses sont différentes parce qu'on sait quelque chose de l'une sans savoir que c'est vrai de l'autre.","« Je connais mon père ; je ne connais pas l'homme masqué ; donc l'homme masqué n'est pas mon père. »"],
+ "Illusion de la récence":["On croit qu'un mot, un usage ou un phénomène est récent alors qu'il existe depuis longtemps, simplement parce qu'on vient de le remarquer.","On croit que « malgré que » est une faute récente, alors qu'on la trouve déjà chez Proust et Gide."],
+ "Erreur de la main chaude":["On croit qu'une personne qui vient de réussir plusieurs fois de suite a plus de chances de réussir encore.","Au basket, on passe la balle au joueur qui vient de marquer trois paniers, persuadé qu'il va marquer à nouveau."],
+ "Corrélation illusoire":["On perçoit un lien entre deux choses (des personnes, des événements, des comportements) alors qu'il n'en existe pas.","On est convaincu qu'il y a plus d'urgences les soirs de pleine lune."],
+ "Erreur d'attribution de groupe":["On suppose que les caractéristiques d'un membre reflètent tout le groupe, ou que la décision d'un groupe reflète l'avis de chacun.","Un client a été désagréable : on en conclut que « les gens de cette ville sont tous impolis »."],
+ "Erreur ultime d'attribution":["On explique les mauvais comportements d'un autre groupe par sa nature et ses bons comportements par les circonstances, et l'inverse pour son propre groupe.","Si un membre de notre équipe rate, c'est la malchance ; si c'est l'équipe adverse, c'est qu'ils sont nuls."],
+ "Stéréotypage":["On attribue à une personne les caractéristiques supposées de son groupe, sans la connaître réellement.","Supposer qu'une personne âgée ne sait pas se servir d'un smartphone."],
+ "Essentialisme":["On croit que les catégories (de personnes, d'animaux, d'objets) ont une nature profonde et immuable qui détermine ce qu'elles sont.","Croire qu'un enfant adopté aura forcément le caractère de ses parents biologiques."],
+ "Fixité fonctionnelle":["On n'imagine un objet que dans son usage habituel, ce qui empêche de voir d'autres façons de s'en servir.","Chercher un tournevis partout sans penser qu'une pièce de monnaie ferait l'affaire."],
+ "Effet d'hypocrisie morale":["Après une bonne action, on se sent autorisé à agir de façon moins morale ensuite.","Après avoir acheté un produit bio, on s'autorise un dessert supplémentaire."],
+ "Croyance en un monde juste":["On suppose que chacun obtient ce qu'il mérite, au point de blâmer les victimes pour ce qui leur arrive.","« S'il a perdu son emploi, c'est qu'il ne travaillait pas assez. »"],
+ "Argument tiré d'un sophisme":["On conclut qu'une idée est fausse parce que l'argument avancé pour la défendre est mauvais.","Quelqu'un défend la vaccination avec un mauvais argument, donc on en conclut que la vaccination est inutile."],
+ "Biais d'autorité":["On accorde plus de crédit à l'avis d'une figure d'autorité, indépendamment de ce qu'elle dit.","Une publicité montre un acteur en blouse blanche pour vanter un dentifrice."],
+ "Biais d'automatisation":["On fait davantage confiance aux suggestions d'un système automatisé qu'aux autres informations, même lorsque celles-ci sont justes.","Un conducteur suit son GPS jusque dans un chemin impraticable alors que les panneaux indiquaient l'inverse."],
+ "Effet placebo":["Un traitement sans principe actif produit une amélioration réelle ou ressentie, parce qu'on croit à son efficacité.","Un comprimé de sucre soulage réellement le mal de tête de certains patients qui le croient efficace."],
+ "Biais d'homogénéité d'exogroupe":["On perçoit les membres des autres groupes comme tous semblables, et ceux de son propre groupe comme variés.","« Les supporters de l'autre club sont tous pareils », alors que les nôtres sont tous différents."],
+ "Effet inter-races":["On reconnaît plus facilement les visages des personnes de son propre groupe ethnique que ceux des autres.","Un témoin reconnaît moins bien le visage d'un suspect d'une autre origine que la sienne."],
+ "Favoritisme intragroupe":["On favorise les membres de son propre groupe par rapport à ceux des autres groupes.","Un recruteur préfère, à CV égal, le candidat issu de la même école que lui."],
+ "Effet pom-pom girl":["Une personne paraît plus séduisante au sein d'un groupe que lorsqu'on la voit seule.","Sur une photo de groupe, chacun paraît plus séduisant que sur sa photo seul."],
+ "Effet de positivité":["On se souvient plus fidèlement des éléments agréables que des éléments désagréables.","Avec l'âge, on retient davantage les bons moments que les mauvais."],
+ "Pas inventé ici":["On rejette des idées, des produits ou des connaissances parce qu'ils viennent de l'extérieur de son groupe ou de son organisation.","Une équipe refait de zéro un outil qui existe déjà ailleurs, parce qu'il ne vient pas d'elle."],
+ "Dévaluation réactive":["On dévalorise une proposition parce qu'elle vient d'un adversaire.","Une proposition de compromis est jugée mauvaise quand elle vient du parti adverse, et bonne quand elle vient du sien."],
+ "Effet de la route familière":["On estime qu'un trajet familier prend moins de temps qu'un trajet inconnu de même durée.","Le trajet habituel paraît plus court qu'un nouvel itinéraire, même plus rapide."],
+ "Comptabilité mentale":["On range son argent dans des « comptes » mentaux séparés et on le dépense différemment selon sa provenance ou son usage prévu.","On dépense sans compter un remboursement d'impôts « tombé du ciel », mais on surveille chaque euro de son salaire."],
+ "Erreur d'appel à la probabilité":["On tient une chose pour acquise simplement parce qu'elle est possible.","« Ce site pourrait être piraté, donc il va forcément l'être. »"],
+ "Biais de normalité":["On refuse de croire à l'imminence d'une catastrophe ou on en minimise les risques, parce qu'on n'en a jamais vécu.","Des habitants refusent d'évacuer avant un ouragan parce que « ça n'est jamais arrivé ici »."],
+ "Loi de Murphy":["On a le sentiment que tout ce qui peut mal tourner finira par mal tourner, parce que l'on remarque et retient surtout les échecs.","La tartine tombe toujours du côté beurré : on oublie toutes les fois où elle est tombée de l'autre côté."],
+ "Biais de la somme nulle":["On perçoit une situation comme un jeu où le gain de l'un est forcément la perte de l'autre, même quand ce n'est pas le cas.","Penser que si les immigrés trouvent du travail, il y en aura forcément moins pour les autres."],
+ "Effet de sous-additivité":["On estime la probabilité d'un ensemble plus faible que la somme des probabilités de ses parties.","On estime moins probable de mourir « de maladie » que la somme des risques de mourir d'un cancer, d'une crise cardiaque ou d'une autre maladie."],
+ "Effet de dénomination":["On dépense plus facilement la même somme en petites pièces ou petits billets qu'en un gros billet.","On garde plus longtemps un billet de 50 € que la même somme en pièces de 2 €."],
+ "Nombre magique 7 ± 2":["Notre mémoire à court terme ne peut retenir qu'environ sept éléments à la fois, plus ou moins deux.","Les numéros de téléphone sont découpés en paires de chiffres pour être plus faciles à retenir."],
+ "Illusion de transparence":["On surestime à quel point les autres perçoivent nos pensées et nos émotions.","Avant un oral, on est persuadé que le jury voit notre trac, alors qu'il ne remarque rien."],
+ "Effet de projecteur":["On croit être bien plus remarqué et observé par les autres qu'on ne l'est réellement.","On croit que tout le monde a remarqué la tache sur notre chemise."],
+ "Biais des incitations extrinsèques":["On pense que les autres agissent surtout pour des récompenses extérieures (l'argent), alors que soi-même on agirait pour des raisons plus profondes.","« Mes collègues travaillent pour le salaire ; moi, c'est parce que le métier me passionne. »"],
+ "Illusion d'agence externe":["Quand nos préférences s'améliorent d'elles-mêmes, on attribue ce changement à l'intervention bienveillante ou à la clairvoyance de quelqu'un d'autre.","Après un rendez-vous arrangé qui se passe bien, on crédite l'ami qui a organisé la rencontre d'une intuition remarquable."],
+ "Illusion de connaissance asymétrique":["On pense mieux connaître les autres qu'ils ne nous connaissent.","« Je l'ai compris en cinq minutes ; lui ne sait vraiment rien de moi. »"],
+ "Effet de télescopage":["On situe les événements récents plus loin dans le passé, et les événements anciens plus près qu'ils ne le sont.","On est sûr d'être allé chez le dentiste il y a six mois ; c'était il y a plus d'un an."],
+ "Rétrospective de la vie en rose":["On se souvient du passé comme plus agréable qu'il ne l'a été sur le moment.","On se souvient de ses vacances comme parfaites, en oubliant la pluie et les disputes."],
+ "Biais de résultat":["On juge la qualité d'une décision d'après son résultat, plutôt que d'après la façon dont elle a été prise.","Un conducteur rentre sans encombre après avoir bu : on juge sa décision moins grave que s'il avait eu un accident."],
+ "Chance morale":["On blâme ou félicite quelqu'un pour des conséquences qui dépendaient en partie du hasard.","Deux conducteurs grillent le même feu rouge ; seul celui qui renverse un piéton est jugé coupable."],
+ "Déclinisme":["On croit qu'une société ou une institution est sur le déclin, en idéalisant le passé et en noircissant l'avenir.","« Les jeunes ne lisent plus et le pays va de mal en pis. »"],
+ "Biais d'impact":["On surestime l'intensité et la durée des émotions que provoquera un événement futur.","On pense qu'une rupture nous rendra malheureux pendant des années ; quelques mois plus tard, on va bien."],
+ "Biais de pessimisme":["On surestime la probabilité qu'il nous arrive des choses négatives.","Avant un examen, on est persuadé d'échouer malgré une bonne préparation."],
+ "Biais du gain de temps":["On estime mal le temps gagné en accélérant : on le sous-estime à vitesse faible et on le surestime à vitesse élevée.","On accélère sur l'autoroute de 110 à 130 km/h en surestimant le temps gagné, mais on sous-estime ce qu'on gagne en passant de 30 à 50 km/h en ville."],
+ "Biais pro-innovation":["On croit qu'une innovation doit être adoptée par tous telle quelle, sans voir ses limites.","Équiper chaque élève d'une tablette sans vérifier que cela améliore les apprentissages."],
+ "Biais de projection":["On suppose que nos préférences futures seront les mêmes que nos préférences actuelles.","Faire ses courses de la semaine en ayant faim, comme si on aurait le même appétit tous les jours."],
+ "Biais de retenue":["On surestime sa capacité à résister à la tentation et à contrôler ses impulsions.","Garder des chips à la maison en se disant qu'on n'en mangera qu'un peu."],
+ "Biais de cohérence avec soi":["On se souvient de ses opinions et comportements passés comme plus proches de ceux d'aujourd'hui qu'ils ne l'étaient.","Un électeur qui a changé de parti affirme avoir toujours pensé comme aujourd'hui."],
+ "Biais d'excès de confiance":["On a plus confiance dans la justesse de ses jugements qu'ils ne le méritent objectivement.","Des participants sûrs à 99 % de leurs réponses à un quiz se trompent une fois sur cinq."],
+ "Désirabilité sociale":["On répond aux questions, notamment dans les enquêtes, de la façon qui sera la mieux vue par les autres.","Dans un sondage, les gens déclarent lire et faire du sport bien plus qu'ils ne le font réellement."],
+ "Effet « troisième personne »":["On pense que les médias et la publicité influencent davantage les autres que soi-même.","« La publicité, ça marche sur les autres, pas sur moi. »"],
+ "Effet difficile-facile":["On surestime ses chances de réussir les tâches difficiles et on sous-estime ses chances de réussir les tâches faciles.","On se sent sûr de soi face à une question de culture générale très difficile, mais on hésite sur une question facile."],
+ "Effet Lac Wobegon":["La plupart des gens s'estiment au-dessus de la moyenne, ce qui est statistiquement impossible.","Environ 90 % des conducteurs s'estiment meilleurs que la moyenne."],
+ "Biais égocentrique":["On s'appuie trop sur son propre point de vue et on se juge plus favorablement que la réalité, par exemple en s'attribuant une plus grande part d'un travail collectif.","Dans un couple, chacun estime faire plus de la moitié des tâches ménagères."],
+ "Effet Forer":["On trouve très juste une description de sa personnalité qui est en réalité assez vague pour s'appliquer à presque tout le monde.","Des étudiants notent 4,3 sur 5 un portrait « personnalisé » qui était en réalité le même pour toute la classe."],
+ "Effet Barnum":["Autre nom de l'effet Forer : on se reconnaît dans des descriptions générales comme les horoscopes, en les croyant faites pour soi.","« Vous avez un grand besoin d'être apprécié, mais vous êtes parfois critique envers vous-même » : tout le monde s'y reconnaît."],
+ "Biais d'autocomplaisance":["On attribue ses succès à ses qualités et ses échecs aux circonstances.","« J'ai réussi l'examen parce que j'ai travaillé ; je l'ai raté parce que le sujet était injuste. »"],
+ "Effet acteur-observateur":["On explique ses propres actes par la situation, mais ceux des autres par leur personnalité.","« Je suis en retard à cause des bouchons ; lui est en retard parce qu'il est désorganisé. »"],
+ "Illusion de contrôle":["On surestime sa capacité à contrôler des événements, y compris ceux qui relèvent du hasard.","Au loto, on préfère choisir ses numéros soi-même, comme si cela augmentait ses chances."],
+ "Supériorité illusoire":["On surestime ses qualités et ses capacités par rapport à celles des autres.","La majorité des étudiants s'estiment plus intelligents que la moyenne de leur promotion."],
+ "Hypothèse d'attribution défensive":["Face à un malheur, on rejette davantage la faute sur les victimes qui nous ressemblent peu, pour se rassurer sur sa propre vulnérabilité.","Face à un accident de voiture, un conducteur prudent rejette la faute sur la victime qui roulait vite : « ça ne m'arriverait pas »."],
+ "Biais d'attribution des traits":["On se voit comme changeant selon les situations, mais on juge les autres prévisibles et constants dans leur caractère.","« Moi, je m'adapte selon les gens ; mon collègue, lui, est toujours le même. »"],
+ "Justification de l'effort":["On accorde plus de valeur à un résultat quand on a fait beaucoup d'efforts pour l'obtenir.","Après un bizutage pénible, les nouveaux membres valorisent davantage leur association."],
+ "Compensation du risque":["On prend plus de risques quand on se sent mieux protégé, et on devient plus prudent quand on perçoit plus de danger.","Avec des freins ABS, certains conducteurs freinent plus tard et suivent de plus près."],
+ "Effet Peltzman":["Les mesures de sécurité incitent à prendre davantage de risques, ce qui réduit une partie de leur bénéfice.","Avec une ceinture de sécurité, certains conducteurs roulent plus vite, ce qui augmente le risque pour les piétons."],
+ "Appel à la nouveauté":["On juge une idée meilleure simplement parce qu'elle est nouvelle.","« Cette méthode de management date de cette année, elle est forcément meilleure. »"],
+ "Effet de la victime identifiable":["On est plus enclin à aider une personne précise et identifiée qu'un grand nombre de victimes anonymes ayant le même besoin.","La photo d'un seul enfant en détresse rapporte plus de dons que les statistiques de millions d'enfants touchés."],
+ "Escalade irrationnelle":["On continue d'investir dans une décision malgré les preuves qu'elle est mauvaise, pour justifier ce qu'on y a déjà mis.","Lors d'une enchère, on dépasse largement son budget pour ne pas « perdre » ce qu'on a déjà misé."],
+ "Escalade d'engagement":["Plus on a investi de temps, d'argent ou de réputation dans un projet, plus on persiste, même quand il est voué à l'échec.","Le Concorde a continué d'être financé alors que sa non-rentabilité était connue."],
+ "Effet de génération d'information":["On retient mieux une information qu'on a produite soi-même que celle qu'on a simplement lue.","On retient mieux « chaud – fr__d » complété soi-même que la paire « chaud – froid » lue toute faite."],
+ "Biais de la portion":["On considère qu'une portion servie, quelle que soit sa taille, correspond à la bonne quantité à consommer.","On mange plus de pop-corn quand le paquet est plus grand, même sans avoir plus faim."],
+ "Biais du risque zéro":["On préfère éliminer complètement un petit risque plutôt que réduire davantage un risque global plus important.","On préfère supprimer totalement un risque très faible plutôt que diviser par deux un risque bien plus élevé."],
+ "Effet de disposition":["Les investisseurs vendent trop tôt leurs placements gagnants et gardent trop longtemps les perdants.","Un épargnant vend vite l'action qui a gagné 10 % mais garde celle qui a perdu 30 %, en attendant qu'elle remonte."],
+ "Effet de pseudo-certitude":["Dans une décision en plusieurs étapes, on perçoit un résultat comme certain alors qu'il reste incertain.","On choisit l'option « sûre » de la deuxième étape d'un jeu, en oubliant qu'il faut d'abord passer une première étape incertaine."],
+ "Effet de difficulté de traitement":["On retient mieux une information qui demande plus d'effort à lire ou à comprendre.","Un texte écrit dans une police un peu difficile à lire est mieux retenu qu'un texte très lisible."],
+ "Effet de dotation":["On accorde plus de valeur à un objet simplement parce qu'on le possède.","Des participants demandent environ deux fois plus pour vendre une tasse qu'on vient de leur offrir que ce qu'ils paieraient pour l'acheter."],
+ "Effet boomerang":["Face à des preuves qui contredisent nos croyances, on les renforce au lieu de les réviser.","Face à des chiffres qui contredisent son opinion, un militant s'y accroche encore plus fermement."],
+ "Justification du système":["On défend et justifie l'ordre social existant, même lorsqu'il nous désavantage.","Des salariés mal payés défendent la hiérarchie des salaires de leur entreprise comme juste."],
+ "Psychologie inversée":["On fait faire quelque chose à une personne en lui recommandant l'inverse, parce qu'elle réagit contre ce qui limite sa liberté.","« Surtout, ne finis pas tes légumes » dit à un enfant qui refuse de manger."],
+ "Réactance":["On réagit négativement à ce qui semble menacer sa liberté de choix, jusqu'à faire l'inverse de ce qui est demandé.","Une étiquette « interdit aux moins de 18 ans » rend le film plus attirant pour les adolescents."],
+ "Effet de dominance asymétrique":["Ajouter une troisième option moins intéressante (un « leurre ») modifie notre préférence entre les deux premières.","Un café propose un petit à 2 €, un moyen à 3,80 € et un grand à 4 € : le moyen sert surtout à faire choisir le grand."],
+ "Biais de comparaison sociale":["On éprouve de l'aversion ou de la rivalité envers les personnes perçues comme supérieures à soi.","Un recruteur écarte un candidat plus brillant que lui, de peur d'être éclipsé."],
+ "Effet d'ambiguïté":["On préfère une option dont les chances sont connues à une option dont les chances sont inconnues.","On préfère un placement à rendement connu de 3 % plutôt qu'un placement au rendement incertain, même probablement plus élevé."],
+ "Biais d'information":["On cherche toujours plus d'informations, même quand elles ne changeront rien à la décision.","Un médecin prescrit un examen supplémentaire alors que le résultat ne changera pas le traitement."],
+ "Biais de croyance":["On juge un raisonnement valable si sa conclusion nous paraît plausible, plutôt que d'après sa logique.","« Les fleurs ont besoin d'eau ; les roses ont besoin d'eau ; donc les roses sont des fleurs » paraît valide parce que la conclusion est vraie, alors que le raisonnement ne tient pas."],
+ "Effet « ça rime donc c'est bon »":["Une phrase qui rime nous paraît plus juste et plus vraie que la même idée dite sans rime.","« Qui se ressemble s'assemble » paraît plus vrai que « les gens qui se ressemblent se fréquentent »."],
+ "Effet abri à vélo":["Autre nom de la loi de futilité de Parkinson : on passe plus de temps sur les détails faciles que sur les sujets importants et complexes.","Un conseil municipal vote un budget de 10 millions en dix minutes et débat une heure du prix des cafés."],
+ "Erreur de conjonction":["On juge plus probable qu'un événement plus précis se produise qu'un événement plus général qui l'inclut.","Linda, militante engagée, est jugée plus probablement « employée de banque et féministe » que simplement « employée de banque »."],
+ "Rasoir d'Ockham":["On privilégie l'explication la plus simple, celle qui fait appel au moins d'hypothèses, au risque d'écarter des explications plus justes mais plus complexes.","« Il a raté son année parce qu'il est paresseux » : une seule cause simple, plutôt que plusieurs causes combinées (santé, famille, méthode)."],
+ "Effet moins-c'est-mieux":["Présentée seule, une option objectivement moins bonne peut être préférée, alors que la meilleure l'emporte quand on compare les deux.","Vu seul, un service de 24 pièces intactes vaut plus à nos yeux qu'un service de 40 pièces dont quelques-unes sont ébréchées, alors qu'il contient moins."],
+ "Erreur d'attribution de la source":["On se souvient d'une information, mais on se trompe sur l'endroit ou la personne d'où elle vient.","On cite une information « lue dans un journal sérieux », alors qu'on l'a vue sur un réseau social."],
+ "Confusion de la source":["On mélange un souvenir avec d'autres informations (récits, films, rêves), ce qui le déforme.","On raconte un souvenir d'enfance qu'on a en fait vu sur une photo ou entendu raconter."],
+ "Cryptomnésie":["Un souvenir oublié revient sans être reconnu comme tel, et on le prend pour une idée nouvelle et originale.","Un tribunal a jugé que George Harrison avait plagié sans le vouloir, dans « My Sweet Lord », la mélodie d'une chanson entendue des années plus tôt."],
+ "Suggestibilité":["On intègre à ses souvenirs des idées suggérées par d'autres, en les prenant pour ses propres souvenirs.","À force de questions orientées, un enfant finit par « se souvenir » d'un événement qui n'a pas eu lieu."],
+ "Effet d'espacement":["On retient mieux ce qu'on apprend en plusieurs séances espacées dans le temps qu'en une seule séance intensive.","Réviser 20 minutes par jour pendant une semaine est plus efficace que 2 heures la veille de l'examen."],
+ "Association implicite":["On associe automatiquement certains concepts, ce qui révèle des liens dont on n'a pas forcément conscience.","Lors d'un test chronométré, on associe plus vite « homme » à « carrière » que « femme » à « carrière »."],
+ "Stéréotype implicite":["On attribue, sans en avoir conscience, certaines qualités à des personnes selon leur groupe social.","Sans s'en rendre compte, on imagine un chirurgien comme un homme."],
+ "Mémorisation stéréotypée":["Les stéréotypes déforment nos souvenirs : on retient mieux ce qui les confirme.","On se souvient qu'un bibliothécaire portait des lunettes, alors qu'il n'en portait pas."],
+ "Préjugé":["On porte un jugement, souvent défavorable, sur une personne d'après le groupe auquel on la rattache.","Refuser un logement à quelqu'un à cause de son nom de famille."],
+ "Biais d'affaiblissement de l'affect":["Les émotions liées aux souvenirs négatifs s'estompent plus vite que celles liées aux souvenirs positifs.","On repense à une dispute ancienne avec le sourire, alors que la joie d'un beau souvenir reste intacte."],
+ "Nivellement et affinement":["En racontant un souvenir, on en gomme certains détails et on en accentue d'autres.","À chaque fois qu'on raconte une anecdote, elle devient plus courte, mais le détail spectaculaire grossit."],
+ "Effet de désinformation":["Un souvenir devient moins exact parce qu'il est contaminé par des informations reçues après l'événement.","Après avoir entendu « quand les voitures se sont écrasées », des témoins se souviennent de bris de verre qui n'existaient pas."],
+ "Effet de position dans une série":["Quand on doit restituer une liste dans l'ordre, on se rappelle mieux les premiers et les derniers éléments que ceux du milieu.","Quand on récite une liste de courses dans l'ordre, ce sont les articles du milieu qui manquent."],
+ "Effet de la longueur de la liste":["Plus une liste est longue, plus la proportion d'éléments dont on se souvient est faible.","On retient presque toute une liste de 5 mots, mais seulement une partie d'une liste de 30."],
+ "Négligence de la durée":["On juge une expérience désagréable presque sans tenir compte de sa durée.","Un examen médical un peu plus long mais qui finit en douceur est jugé moins pénible qu'un examen plus court."],
+ "Effet de la modalité":["On retient mieux les derniers éléments d'une liste quand on les a entendus plutôt que lus.","On retient mieux la fin d'une liste de courses dictée à voix haute que celle d'une liste lue sur un papier."],
+ "Inhibition de la mémoire":["Le cerveau écarte les informations jugées non pertinentes, ce qui rend certains souvenirs plus difficiles à retrouver.","Après avoir changé de code de carte bancaire, on a du mal à retrouver l'ancien."],
+ "Effet de primauté":["On se souvient mieux des premiers éléments d'une liste.","Dans un entretien d'embauche, la première impression pèse plus que tout le reste."],
+ "Effet de récence":["On se souvient mieux des derniers éléments d'une liste.","Lors d'un vote après des présentations successives, le dernier candidat entendu est mieux retenu."],
+ "Indiçage partiel":["Donner une partie d'une liste comme indice rend plus difficile le rappel du reste de la liste.","Si l'on vous souffle quelques pays d'Europe, vous retrouvez moins bien les autres que si l'on ne vous en souffle aucun."],
+ "Effet de position sérielle":["On retient mieux le début et la fin d'une liste que son milieu.","Après une liste de dix courses, on se souvient du pain et du lait (au début et à la fin) mais pas des œufs au milieu."],
+ "Effet du suffixe":["L'avantage du dernier élément d'une liste entendue s'efface si un son qu'on n'a pas à retenir est ajouté juste après.","Si quelqu'un dit « voilà » après une liste de chiffres dictée, on retient moins bien le dernier chiffre."],
+ "Distraction":["Un manque d'attention au moment de vivre ou d'apprendre quelque chose empêche de bien le mémoriser.","On pose ses clés en pensant à autre chose, et on ne se souvient plus où."],
+ "Effet test":["On retient mieux à long terme ce qu'on s'efforce de retrouver en mémoire que ce qu'on se contente de relire.","Se faire interroger sur un cours aide plus à le retenir que de le relire une fois de plus."],
+ "Effet au-suivant":["On se souvient mal de ce qui s'est passé juste avant notre tour de parole.","Lors d'un tour de table, on oublie ce qu'a dit la personne qui parlait juste avant nous."],
+ "Mot sur le bout de la langue":["On n'arrive pas à retrouver un mot, tout en ayant le sentiment de le connaître et d'être sur le point de s'en souvenir.","On sait que le nom de l'acteur commence par un « B » et a deux syllabes, mais impossible de le retrouver."],
+ "Effet de profondeur du traitement":["On retient mieux une information qu'on a analysée en profondeur (son sens) que celle qu'on a traitée superficiellement (sa forme).","On retient mieux un mot quand on s'est demandé ce qu'il signifie que quand on a seulement compté ses lettres."]
+};
+const SRC={"Heuristique de disponibilité": "https://en.wikipedia.org/wiki/Availability_heuristic", "Biais attentionnel": "https://en.wikipedia.org/wiki/Attentional_bias", "Effet de vérité illusoire": "https://en.wikipedia.org/wiki/Illusory_truth_effect", "Effet de simple exposition": "https://en.wikipedia.org/wiki/Mere-exposure_effect", "Effet du contexte": "https://en.wikipedia.org/wiki/Context_effect", "Échec du rappel sans indice": "https://en.wikipedia.org/wiki/Cue-dependent_forgetting", "Biais mnésique lié à l'humeur": "https://en.wikipedia.org/wiki/Mood_congruence", "Illusion de fréquence": "https://en.wikipedia.org/wiki/Frequency_illusion", "Phénomène de Baader-Meinhof": "https://en.wikipedia.org/wiki/Frequency_illusion", "Décalage empathique": "https://en.wikipedia.org/wiki/Empathy_gap", "Biais d'omission": "https://en.wikipedia.org/wiki/Omission_bias", "Oubli de la fréquence de base": "https://en.wikipedia.org/wiki/Base_rate_fallacy", "Effet de bizarrerie": "https://en.wikipedia.org/wiki/Bizarreness_effect", "Effet d'humour": "https://en.wikipedia.org/wiki/List_of_cognitive_biases#Humor_effect", "Effet von Restorff": "https://en.wikipedia.org/wiki/Von_Restorff_effect", "Effet de supériorité de l'image": "https://en.wikipedia.org/wiki/Picture_superiority_effect", "Effet de référence à soi": "https://en.wikipedia.org/wiki/Self-reference_effect", "Biais de négativité": "https://en.wikipedia.org/wiki/Negativity_bias", "Ancrage": "https://en.wikipedia.org/wiki/Anchoring_(cognitive_bias)", "Conservatisme": "https://en.wikipedia.org/wiki/Conservatism_(belief_revision)", "Effet de contraste": "https://en.wikipedia.org/wiki/Contrast_effect", "Biais de distinction": "https://en.wikipedia.org/wiki/Distinction_bias", "Effet de focus": "https://en.wikipedia.org/wiki/Anchoring_(cognitive_bias)", "Effet de cadrage": "https://en.wikipedia.org/wiki/Framing_effect_(psychology)", "Illusion monétaire": "https://en.wikipedia.org/wiki/Money_illusion", "Loi de Weber-Fechner": "https://en.wikipedia.org/wiki/Weber–Fechner_law", "Biais de confirmation": "https://en.wikipedia.org/wiki/Confirmation_bias", "Biais de congruence": "https://en.wikipedia.org/wiki/Congruence_bias", "Rationalisation post-achat": "https://en.wikipedia.org/wiki/Choice-supportive_bias", "Biais de soutien du choix": "https://en.wikipedia.org/wiki/Choice-supportive_bias", "Perception sélective": "https://en.wikipedia.org/wiki/Selective_perception", "Attente de l'expérimentateur": "https://en.wikipedia.org/wiki/Observer-expectancy_effect", "Biais de l'expérimentateur": "https://en.wikipedia.org/wiki/Observer-expectancy_effect", "Effet de l'observateur": "https://en.wikipedia.org/wiki/Observer-expectancy_effect", "Biais d'attente": "https://en.wikipedia.org/wiki/Observer-expectancy_effect", "Effet de l'autruche": "https://en.wikipedia.org/wiki/Ostrich_effect", "Validation subjective": "https://en.wikipedia.org/wiki/Subjective_validation", "Effet de l'influence continue": "https://en.wikipedia.org/wiki/List_of_cognitive_biases#Continued_influence_effect", "Réflexe de Semmelweis": "https://en.wikipedia.org/wiki/Semmelweis_reflex", "Biais de l'angle mort": "https://en.wikipedia.org/wiki/Bias_blind_spot", "Cynisme naïf": "https://en.wikipedia.org/wiki/Naïve_cynicism", "Réalisme naïf": "https://en.wikipedia.org/wiki/Naïve_realism_(psychology)", "Confabulation": "https://en.wikipedia.org/wiki/Confabulation", "Illusion des séries": "https://en.wikipedia.org/wiki/Clustering_illusion", "Insensibilité à la taille du groupe": "https://en.wikipedia.org/wiki/Insensitivity_to_sample_size", "Négligence des probabilités": "https://en.wikipedia.org/wiki/Neglect_of_probability", "Erreur de la preuve anecdotique": "https://en.wikipedia.org/wiki/Anecdotal_evidence", "Illusion de la validité": "https://en.wikipedia.org/wiki/Illusion_of_validity", "Erreur de l'homme masqué": "https://en.wikipedia.org/wiki/Masked-man_fallacy", "Illusion de la récence": "https://en.wikipedia.org/wiki/Recency_bias", "Erreur du parieur": "https://en.wikipedia.org/wiki/Gambler's_fallacy", "Erreur de la main chaude": "https://en.wikipedia.org/wiki/Hot-hand_fallacy", "Corrélation illusoire": "https://en.wikipedia.org/wiki/Illusory_correlation", "Paréidolie": "https://en.wikipedia.org/wiki/Pareidolia", "Erreur d'attribution de groupe": "https://en.wikipedia.org/wiki/Group_attribution_error", "Erreur ultime d'attribution": "https://en.wikipedia.org/wiki/Ultimate_attribution_error", "Stéréotypage": "https://en.wikipedia.org/wiki/Stereotype", "Essentialisme": "https://en.wikipedia.org/wiki/Essentialism", "Fixité fonctionnelle": "https://en.wikipedia.org/wiki/Functional_fixedness", "Effet d'hypocrisie morale": "https://en.wikipedia.org/wiki/Self-licensing", "Croyance en un monde juste": "https://en.wikipedia.org/wiki/Just-world_hypothesis", "Argument tiré d'un sophisme": "https://en.wikipedia.org/wiki/Argument_from_fallacy", "Biais d'autorité": "https://en.wikipedia.org/wiki/Authority_bias", "Biais d'automatisation": "https://en.wikipedia.org/wiki/Automation_bias", "Effet de mode": "https://en.wikipedia.org/wiki/Bandwagon_effect", "Effet placebo": "https://en.wikipedia.org/wiki/Placebo", "Biais d'homogénéité d'exogroupe": "https://en.wikipedia.org/wiki/Out-group_homogeneity", "Effet inter-races": "https://en.wikipedia.org/wiki/Cross-race_effect", "Favoritisme intragroupe": "https://en.wikipedia.org/wiki/In-group_favoritism", "Effet de halo": "https://en.wikipedia.org/wiki/Halo_effect", "Effet pom-pom girl": "https://en.wikipedia.org/wiki/Cheerleader_effect", "Effet de positivité": "https://en.wikipedia.org/wiki/Positivity_effect", "Pas inventé ici": "https://en.wikipedia.org/wiki/Not_invented_here", "Dévaluation réactive": "https://en.wikipedia.org/wiki/Reactive_devaluation", "Effet de la route familière": "https://en.wikipedia.org/wiki/Well_travelled_road_effect", "Comptabilité mentale": "https://en.wikipedia.org/wiki/Mental_accounting", "Erreur d'appel à la probabilité": "https://en.wikipedia.org/wiki/Appeal_to_probability", "Biais de normalité": "https://en.wikipedia.org/wiki/Normalcy_bias", "Loi de Murphy": "https://en.wikipedia.org/wiki/Murphy's_law", "Biais de la somme nulle": "https://en.wikipedia.org/wiki/Zero-sum_thinking", "Biais du survivant": "https://en.wikipedia.org/wiki/Survivorship_bias", "Effet de sous-additivité": "https://en.wikipedia.org/wiki/Subadditivity_effect", "Effet de dénomination": "https://en.wikipedia.org/wiki/Denomination_effect", "Nombre magique 7 ± 2": "https://en.wikipedia.org/wiki/The_Magical_Number_Seven,_Plus_or_Minus_Two", "Illusion de transparence": "https://en.wikipedia.org/wiki/Illusion_of_transparency", "Malédiction de la connaissance": "https://en.wikipedia.org/wiki/Curse_of_knowledge", "Effet de projecteur": "https://en.wikipedia.org/wiki/Spotlight_effect", "Biais des incitations extrinsèques": "https://en.wikipedia.org/wiki/Extrinsic_incentives_bias", "Illusion d'agence externe": "https://en.wikipedia.org/wiki/Illusion_of_external_agency", "Illusion de connaissance asymétrique": "https://en.wikipedia.org/wiki/Illusion_of_asymmetric_insight", "Effet de télescopage": "https://en.wikipedia.org/wiki/Telescoping_effect", "Rétrospective de la vie en rose": "https://en.wikipedia.org/wiki/Rosy_retrospection", "Biais rétrospectif": "https://en.wikipedia.org/wiki/Hindsight_bias", "Biais de résultat": "https://en.wikipedia.org/wiki/Outcome_bias", "Chance morale": "https://en.wikipedia.org/wiki/Moral_luck", "Déclinisme": "https://en.wikipedia.org/wiki/Declinism", "Biais d'impact": "https://en.wikipedia.org/wiki/Impact_bias", "Biais de pessimisme": "https://en.wikipedia.org/wiki/Optimism_bias#Pessimism_bias", "Biais de planification": "https://en.wikipedia.org/wiki/Planning_fallacy", "Biais du gain de temps": "https://en.wikipedia.org/wiki/Time-saving_bias", "Biais pro-innovation": "https://en.wikipedia.org/wiki/Pro-innovation_bias", "Biais de projection": "https://en.wikipedia.org/wiki/Affective_forecasting#Projection_bias", "Biais de retenue": "https://en.wikipedia.org/wiki/Restraint_bias", "Biais de cohérence avec soi": "https://en.wikipedia.org/wiki/List_of_cognitive_biases#Consistency_bias", "Biais d'excès de confiance": "https://en.wikipedia.org/wiki/Overconfidence_effect", "Désirabilité sociale": "https://en.wikipedia.org/wiki/Social_desirability_bias", "Effet « troisième personne »": "https://en.wikipedia.org/wiki/Third-person_effect", "Effet de faux consensus": "https://en.wikipedia.org/wiki/False_consensus_effect", "Effet difficile-facile": "https://en.wikipedia.org/wiki/Hard–easy_effect", "Effet Lac Wobegon": "https://en.wikipedia.org/wiki/Lake_Wobegon#The_Lake_Wobegon_effect", "Effet Dunning-Kruger": "https://en.wikipedia.org/wiki/Dunning–Kruger_effect", "Biais égocentrique": "https://en.wikipedia.org/wiki/Egocentric_bias", "Biais d'optimisme": "https://en.wikipedia.org/wiki/Optimism_bias", "Effet Forer": "https://en.wikipedia.org/wiki/Barnum_effect", "Effet Barnum": "https://en.wikipedia.org/wiki/Barnum_effect", "Biais d'autocomplaisance": "https://en.wikipedia.org/wiki/Self-serving_bias", "Effet acteur-observateur": "https://en.wikipedia.org/wiki/Actor–observer_asymmetry#bias", "Illusion de contrôle": "https://en.wikipedia.org/wiki/Illusion_of_control", "Supériorité illusoire": "https://en.wikipedia.org/wiki/Illusory_superiority", "Erreur fondamentale d'attribution": "https://en.wikipedia.org/wiki/Fundamental_attribution_error", "Hypothèse d'attribution défensive": "https://en.wikipedia.org/wiki/Defensive_attribution_hypothesis", "Biais d'attribution des traits": "https://en.wikipedia.org/wiki/Trait_ascription_bias", "Justification de l'effort": "https://en.wikipedia.org/wiki/Effort_justification", "Compensation du risque": "https://en.wikipedia.org/wiki/Risk_compensation", "Effet Peltzman": "https://en.wikipedia.org/wiki/Risk_compensation#Peltzman_effect", "Rabais hyperbolique": "https://en.wikipedia.org/wiki/Hyperbolic_discounting", "Appel à la nouveauté": "https://en.wikipedia.org/wiki/Appeal_to_novelty", "Effet de la victime identifiable": "https://en.wikipedia.org/wiki/Identifiable_victim_effect", "Biais des coûts irrécupérables": "https://en.wikipedia.org/wiki/Sunk_cost#Loss_aversion_and_the_sunk_cost_fallacy", "Escalade irrationnelle": "https://en.wikipedia.org/wiki/Escalation_of_commitment", "Escalade d'engagement": "https://en.wikipedia.org/wiki/Escalation_of_commitment", "Effet de génération d'information": "https://en.wikipedia.org/wiki/Generation_effect", "Aversion à la perte": "https://en.wikipedia.org/wiki/Loss_aversion", "Effet IKEA": "https://en.wikipedia.org/wiki/IKEA_effect", "Biais de la portion": "https://en.wikipedia.org/wiki/List_of_cognitive_biases", "Biais du risque zéro": "https://en.wikipedia.org/wiki/Zero-risk_bias", "Effet de disposition": "https://en.wikipedia.org/wiki/Disposition_effect", "Effet de pseudo-certitude": "https://en.wikipedia.org/wiki/Pseudocertainty_effect", "Effet de difficulté de traitement": "https://en.wikipedia.org/wiki/List_of_cognitive_biases#Processing_difficulty_effect", "Effet de dotation": "https://en.wikipedia.org/wiki/Endowment_effect", "Effet boomerang": "https://en.wikipedia.org/wiki/Confirmation_bias#backfire_effect", "Justification du système": "https://en.wikipedia.org/wiki/System_justification", "Psychologie inversée": "https://en.wikipedia.org/wiki/Reverse_psychology", "Réactance": "https://en.wikipedia.org/wiki/Reactance_(psychology)", "Effet de dominance asymétrique": "https://en.wikipedia.org/wiki/Decoy_effect", "Biais de comparaison sociale": "https://en.wikipedia.org/wiki/Social_comparison_bias", "Biais du statu quo": "https://en.wikipedia.org/wiki/Status_quo_bias", "Effet d'ambiguïté": "https://en.wikipedia.org/wiki/Ambiguity_effect", "Biais d'information": "https://en.wikipedia.org/wiki/Information_bias_(psychology)", "Biais de croyance": "https://en.wikipedia.org/wiki/Belief_bias", "Effet « ça rime donc c'est bon »": "https://en.wikipedia.org/wiki/Rhyme-as-reason_effect", "Effet abri à vélo": "https://en.wikipedia.org/wiki/Law_of_triviality", "Loi de futilité de Parkinson": "https://en.wikipedia.org/wiki/Law_of_triviality", "Erreur de conjonction": "https://en.wikipedia.org/wiki/Conjunction_fallacy", "Rasoir d'Ockham": "https://en.wikipedia.org/wiki/Occam's_razor", "Effet moins-c'est-mieux": "https://en.wikipedia.org/wiki/Less-is-better_effect", "Erreur d'attribution de la source": "https://en.wikipedia.org/wiki/Misattribution_of_memory", "Confusion de la source": "https://en.wikipedia.org/wiki/Misattribution_of_memory#Source_confusion", "Cryptomnésie": "https://en.wikipedia.org/wiki/Cryptomnesia", "Faux souvenir": "https://en.wikipedia.org/wiki/False_memory", "Suggestibilité": "https://en.wikipedia.org/wiki/Suggestibility", "Effet d'espacement": "https://en.wikipedia.org/wiki/Spacing_effect", "Association implicite": "https://en.wikipedia.org/wiki/Implicit_stereotype", "Stéréotype implicite": "https://en.wikipedia.org/wiki/Implicit_stereotype", "Mémorisation stéréotypée": "https://en.wikipedia.org/wiki/Implicit_stereotype", "Préjugé": "https://en.wikipedia.org/wiki/Prejudice", "Biais d'affaiblissement de l'affect": "https://en.wikipedia.org/wiki/Fading_affect_bias", "Règle pic-fin": "https://en.wikipedia.org/wiki/Peak–end_rule", "Nivellement et affinement": "https://en.wikipedia.org/wiki/Leveling_and_sharpening", "Effet de désinformation": "https://en.wikipedia.org/wiki/Misinformation_effect", "Effet de position dans une série": "https://en.wikipedia.org/wiki/Recall_(memory)#Serial_recall", "Effet de la longueur de la liste": "https://en.wikipedia.org/wiki/Recall_(memory)#Serial_recall", "Négligence de la durée": "https://en.wikipedia.org/wiki/Duration_neglect", "Effet de la modalité": "https://en.wikipedia.org/wiki/Modality_effect", "Inhibition de la mémoire": "https://en.wikipedia.org/wiki/Memory_inhibition", "Effet de primauté": "https://en.wikipedia.org/wiki/Serial-position_effect#Primacy_effect", "Effet de récence": "https://en.wikipedia.org/wiki/Serial-position_effect#Recency_effect", "Indiçage partiel": "https://en.wikipedia.org/wiki/Memory_inhibition#Part-set_cuing_effect", "Effet de position sérielle": "https://en.wikipedia.org/wiki/Serial-position_effect", "Effet du suffixe": "https://en.wikipedia.org/wiki/List_of_cognitive_biases#Suffix_effect", "Distraction": "https://en.wikipedia.org/wiki/Absent-mindedness", "Effet test": "https://en.wikipedia.org/wiki/Testing_effect", "Effet au-suivant": "https://en.wikipedia.org/wiki/Next-in-line_effect", "Effet Google": "https://en.wikipedia.org/wiki/Google_effect", "Mot sur le bout de la langue": "https://en.wikipedia.org/wiki/Tip_of_the_tongue", "Effet de profondeur du traitement": "https://en.wikipedia.org/wiki/Levels-of-processing_effect"};
+const $=s=>document.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const D=ms=>reduce?0:ms, E='cubic-bezier(.22,.8,.24,1)', DUR=560;
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const vp=$('#vp'),home=$('#home'),fam=$('#fam'),mot=$('#mot'),det=$('#det');
+
+/* Teintes : t=0 le plus sombre, t=1 le plus clair */
+const shade=(c,t)=>t<.5?`color-mix(in oklab,var(${c}),var(--deep) ${Math.round((.5-t)*60)}%)`:`color-mix(in oklab,var(${c}),#F7F3FF ${Math.round((t-.5)*96)}%)`;
+const hd=c=>`color-mix(in oklab,var(${c}),var(--deep) 38%)`;
+const lightAt=t=>t>.78;
+const count=f=>f.m.reduce((a,m)=>a+m[1].length,0);
+
+/* ---- Niveau 1 : courants ---- */
+home.querySelector('.blocks').innerHTML=FAM.map((f,i)=>`<button class="block mv" data-f="${i}" style="--bg:var(${f.c})">
+  <span class="q">${esc(f.q)}</span><b>${esc(f.name)}</b><span class="peek">${f.m.length} motifs</span><span class="n">${count(f)} biais</span></button>`).join('');
+
+/* ---- Niveau 2 : motifs du courant, en gros blocs ---- */
+let F=0,M=0;
+function renderFam(fi){
+  F=fi;const f=FAM[fi],n=f.m.length;
+  fam.style.setProperty('--hd',hd(f.c));
+  fam.innerHTML=`<div class="fhead mv"><button class="back in" data-back>‹ Courants</button><h3>${esc(f.name)}</h3><p class="in">${count(f)} biais · ${n} motifs</p></div>
+  <div class="blocks">${f.m.map((m,i)=>{const t=.12+.72*i/(n-1);
+    return `<button class="block motif mv in${lightAt(t)?' light':''}" data-m="${i}" style="--bg:${shade(f.c,t)}" data-t="${t}">
+      <span class="n">${m[1].length}</span><b>${esc(m[0])}</b></button>`}).join('')}</div>`;
+}
+
+/* ---- Niveau 3 : biais du motif ---- */
+function renderMot(mi){
+  M=mi;const f=FAM[F],m=f.m[mi],N=m[1].length;
+  mot.style.setProperty('--hd',hd(f.c));mot.style.setProperty('--end',shade(f.c,1));
+  mot.innerHTML=`<div class="fhead mv"><button class="back in" data-back>‹ ${esc(f.name)}</button><h3>${esc(m[0])}</h3><p class="in">${N} biais</p></div>
+  <div class="list">${m[1].map((b,k)=>{const t=.1+.85*k/Math.max(1,N-1);
+    return `<button class="row st mv in${lightAt(t)?' light':''}" data-b="${esc(b)}" style="--bg:${shade(f.c,t)};--k:${k}"><span>${esc(b)}</span></button>`}).join('')}<div class="spacer"></div></div>`;
+  const list=mot.querySelector('.list'),sts=$$('.st',list);
+  requestAnimationFrame(()=>{
+    sts.forEach(el=>{el._top=el.offsetTop;el._stick=Math.min(+el.style.getPropertyValue('--k'),12)*4});
+    list.addEventListener('scroll',()=>{const s=list.scrollTop;
+      sts.forEach(el=>{const p=Math.max(0,Math.min(1,(s+el._stick-el._top)/el.offsetHeight));if(el._p!==p){el._p=p;el.style.setProperty('--p',p.toFixed(3))}})},{passive:true});
+  });
+}
+
+/* ---- Fiche ---- */
+function renderDet(n,bg,light){
+  const f=FAM[F],m=f.m[M],d=DEF[n],sib=m[1].filter(x=>x!==n);
+  det.style.setProperty('--bg',bg);det.style.setProperty('--lab',`color-mix(in oklab,var(${f.c}),var(--deep) 28%)`);det.classList.toggle('light',light);
+  const rows=$$('#mot .row');
+  det.innerHTML=`<div class="dwrap">
+   <div class="dhead"><button class="back in" data-back>‹ Retour à la liste</button><span class="crumb in">${esc(f.name)}</span><h3>${esc(n)}</h3></div>
+   <div class="sheet in">
+    <section><h4>En une phrase</h4>${d?`<p class="def">${esc(d[0])}</p>`:`<p class="todo">Définition à rédiger pour cette maquette.</p>`}</section>
+    ${d&&d[1]?`<section><h4>Exemple</h4><blockquote>${esc(d[1])}</blockquote></section>`:''}
+    <section><h4>Pourquoi on y tombe</h4><p class="mech">${esc(m[0])}. <b>${sib.length} autres biais</b> reposent sur ce même mécanisme.</p></section>
+    <section><h4>Biais qui fonctionnent pareil</h4><div class="sibs">${sib.map(s=>{const r=rows.find(x=>x.dataset.b===s);
+      return `<button class="sib" data-s="${esc(s)}" style="--sbg:${r?r.style.getPropertyValue('--bg'):'var('+f.c+')'}"><span>${esc(s)}</span></button>`}).join('')}</div></section>
+    ${SRC[n]?`<p class="srcl">Source : <a href="${esc(SRC[n])}" target="_blank" rel="noopener">Wikipédia, « ${esc(decodeURIComponent(SRC[n].split('/wiki/')[1]).replace(/_/g,' ').replace('#',' › '))} »</a>, article lié par le Cognitive Bias Codex</p>`:''}
+   </div></div>`;
+}
+
+/* ---- Ouverture / fermeture : même geste à chaque niveau ----
+   Le bloc touché s'agrandit jusqu'aux bords. Tout ce qui est au-dessus monte d'un seul mouvement,
+   tout ce qui est en dessous descend d'un seul mouvement : deux groupes, deux destins. */
+const stack=[];let busy=false;
+/* Écarte les éléments autour du bloc touché et retient lesquels ont bougé, pour les remettre exactement en place au retour */
+function split(parent,from){
+  const V=vp.getBoundingClientRect(),r=from.getBoundingClientRect(),up=r.top-V.top,down=V.bottom-r.bottom,moved=[];
+  $$('.mv',parent).forEach(el=>{if(el===from)return;const er=el.getBoundingClientRect();if(er.bottom<=V.top||er.top>=V.bottom)return;
+    el.getAnimations().forEach(a=>a.cancel());
+    const tr=`translateY(${er.top<r.top?-up:down}px)`;moved.push([el,tr]);
+    el.animate([{transform:'none'},{transform:tr}],{duration:D(DUR),easing:E,fill:'forwards'})});
+  return {up,down,moved};
+}
+function unsplit(moved){
+  moved.forEach(([el,tr])=>{el.getAnimations().forEach(a=>a.cancel());
+    el.animate([{transform:tr},{transform:'none'}],{duration:D(DUR-40),easing:E})});
+}
+/* Le titre du bloc touché glisse jusqu'à sa place en haut du nouvel écran (même élément, perçu comme continu) */
+function flyTitle(src,dst,back){
+  if(!src||!dst)return;
+  const a=src.getBoundingClientRect(),b=dst.getBoundingClientRect();
+  const k=parseFloat(getComputedStyle(src).fontSize)/parseFloat(getComputedStyle(dst).fontSize);
+  const at=`translate(${a.left-b.left}px,${a.top-b.top}px) scale(${k})`;
+  dst.style.transformOrigin='0 0';
+  dst.animate(back?[{transform:'none'},{transform:at}]:[{transform:at},{transform:'none'}],{duration:D(back?DUR-60:DUR),easing:E,fill:back?'forwards':'none'});
+}
+function push(parent,from,scr){
+  busy=true;
+  const {up,down,moved}=split(parent,from);
+  /* le nouvel écran démarre dans la couleur exacte du bloc touché : plus de fond sombre visible */
+  const col=getComputedStyle(from).backgroundColor;
+  scr.style.background=col;scr.hidden=false;scr.style.zIndex=stack.length+2;
+  scr.animate([{clipPath:`inset(${up}px 0 ${down}px 0)`},{clipPath:'inset(0 0 0 0)'}],{duration:D(DUR),easing:E});
+  const head=scr.querySelector('.fhead');
+  if(head)head.animate([{backgroundColor:col},{backgroundColor:getComputedStyle(head).backgroundColor}],{duration:D(DUR),easing:E});
+  flyTitle(from.querySelector('b')||from.querySelector('span'),scr.querySelector('h3'));
+  /* le reste du niveau suivant arrive d'un bloc : tous ses éléments ont la même trajectoire */
+  $$('.in',scr).forEach(el=>el.animate([{transform:'translateY(28px)',opacity:0},{transform:'none',opacity:1}],{duration:D(460),delay:D(120),easing:E,fill:'backwards'}));
+  stack.push({parent,from,scr,up,down,moved});
+  setTimeout(()=>{busy=false},D(DUR+20));
+}
+function pop(){
+  if(busy||!stack.length)return;busy=true;
+  const {scr,up,down,moved,from}=stack.pop();
+  unsplit(moved);
+  /* au retour : le contenu s'efface, l'écran redevient la couleur du bloc et se referme sur lui */
+  const col=getComputedStyle(from).backgroundColor;
+  $$('.in',scr).forEach(el=>{el.getAnimations().forEach(a=>a.cancel());el.animate([{opacity:1},{opacity:0}],{duration:D(200),easing:'ease-out',fill:'forwards'})});
+  const head=scr.querySelector('.fhead');
+  if(head)head.animate([{backgroundColor:getComputedStyle(head).backgroundColor},{backgroundColor:col}],{duration:D(DUR-60),easing:E,fill:'forwards'});
+  flyTitle(from.querySelector('b')||from.querySelector('span'),scr.querySelector('h3'),true);
+  let finished=false;
+  /* à la fin, on force l'état final : écran fermé, blocs du niveau précédent remis à leur place */
+  const done=()=>{if(finished)return;finished=true;scr.hidden=true;
+    [scr,...scr.querySelectorAll('*')].forEach(el=>el.getAnimations().forEach(a=>a.cancel()));
+    moved.forEach(([el])=>el.getAnimations().forEach(a=>a.cancel()));busy=false};
+  scr.animate([{clipPath:'inset(0 0 0 0)'},{clipPath:`inset(${up}px 0 ${down}px 0)`}],{duration:D(DUR-40),easing:E,fill:'forwards'}).onfinish=done;
+  setTimeout(done,D(DUR)+80); /* filet de sécurité si l'animation est interrompue */
+}
+function swapDet(n){
+  const top=stack[stack.length-1],row=$$('.row',mot).find(r=>r.dataset.b===n);if(!row)return;
+  top.moved.forEach(([el])=>el.getAnimations().forEach(a=>a.cancel()));
+  renderDet(n,row.style.getPropertyValue('--bg'),row.classList.contains('light'));det.style.background=getComputedStyle(row).backgroundColor;
+  const s=split(mot,row);Object.assign(top,{from:row,up:s.up,down:s.down,moved:s.moved});
+  det.querySelector('.dwrap').animate([{transform:'translateX(40px)',opacity:0},{transform:'none',opacity:1}],{duration:D(420),easing:E});
+}
+
+$('#sw').addEventListener('click',e=>{
+  const t=e.target.closest('button');if(!t||busy)return;
+  if(t.dataset.f!==undefined){renderFam(+t.dataset.f);push(home,t,fam)}
+  else if(t.dataset.m!==undefined){renderMot(+t.dataset.m);push(fam,t,mot)}
+  else if(t.dataset.b){renderDet(t.dataset.b,t.style.getPropertyValue('--bg'),t.classList.contains('light'));push(mot,t,det)}
+  else if(t.dataset.s)swapDet(t.dataset.s);
+  else if(t.hasAttribute('data-back'))pop();
+});
+
+/* ---- Retour système (geste ou bouton « retour » du téléphone) ----
+   Chaque ouverture ajoute une étape à l'historique ; revenir en arrière referme le niveau ouvert. */
+const _push=push;
+push=function(parent,from,scr){_push(parent,from,scr);history.pushState({depth:stack.length},'')};
+function popWhenReady(){if(!stack.length)return;if(busy){setTimeout(popWhenReady,120);return}pop()}
+addEventListener('popstate',popWhenReady);
+document.getElementById('sw').addEventListener('click',e=>{
+  const t=e.target.closest('[data-back]');if(!t)return;
+  e.stopImmediatePropagation();if(!busy&&stack.length)history.back();
+},true);
+
+/* ---- Hors connexion ---- */
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script>
+</body>
+</html>
