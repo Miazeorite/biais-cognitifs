@@ -1,7 +1,7 @@
 /* Biais cognitifs : fonctionnement hors connexion.
    L'app et ses icônes sont mises en cache à l'installation ; les polices le sont à la première visite. */
-const VERSION = 'biais-cognitifs-v1';
-const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
+const VERSION = 'biais-cognitifs-v2';
+const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './sources.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
