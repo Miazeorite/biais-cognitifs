@@ -52,6 +52,36 @@ button:focus-visible{outline:2px solid #fff;outline-offset:-4px}
 .block.motif .n{bottom:auto;top:14px}
 .block.motif .peek{padding-right:0}
 .block:hover{filter:brightness(1.07)}
+/* Bandeau quiz : plus bas que les courants, en violet profond */
+.block.quizb{flex:0 0 auto;gap:2px;padding-bottom:14px}
+.block.quizb b{font-size:20px;line-height:1.1}
+.qgo{position:absolute;right:16px;bottom:13px;font:600 13px var(--f-b);padding:7px 12px;border-radius:999px;background:#fff;color:#241A45}
+/* Écran quiz */
+#quiz .fhead{background:var(--hd)}
+.qwrap{flex:1;overflow:auto;scrollbar-width:none;padding:14px 16px calc(28px + var(--bot,0px));display:flex;flex-direction:column;gap:14px}
+.qfilt{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
+.qf{flex:none;padding:7px 12px;border-radius:999px;font-size:12.5px;font-weight:600;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#fff}
+.qf[aria-pressed="true"]{background:#fff;color:#241A45;border-color:#fff}
+.qcard{background:#F7F5FB;color:#171326;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.qcard .exd{--lab:#5B3FC4}
+.qtext{margin:0;font:500 17px/1.45 var(--f-b);text-wrap:pretty}
+.qask{margin:0;font:500 10.5px var(--f-m);letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.7)}
+.qopts{display:flex;flex-direction:column;gap:8px}
+.qo{padding:14px 16px;border-radius:14px;font-size:15px;font-weight:600;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#fff;transition:background .2s,opacity .2s,border-color .2s}
+.qo:hover:not(:disabled){background:rgba(255,255,255,.14)}
+.qo:disabled{cursor:default}
+.qo.ok{background:#1F8A5B;border-color:#1F8A5B;opacity:1}
+.qo.ko{background:#C93D55;border-color:#C93D55;opacity:1}
+.qo.dim{opacity:.45}
+.qfb{background:#F7F5FB;color:#171326;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.qres{font:500 10.5px var(--f-m);letter-spacing:.08em;text-transform:uppercase}
+.qres.good{color:#1F7A51}.qres.bad{color:#B23149}
+.qname{margin:0;font:700 24px/1.1 var(--f-d);letter-spacing:-.01em}
+.qdef{margin:0;font-size:14.5px;line-height:1.5;color:#2A253A}
+.qbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.qnext{padding:11px 16px;border-radius:12px;background:#241A45;color:#fff;font-weight:600;font-size:14px}
+.qsee{padding:11px 16px;border-radius:12px;background:#fff;border:1px solid #E4DFEE;color:#241A45;font-weight:600;font-size:14px}
+.qstat{display:flex;gap:14px;font:500 11px var(--f-m);letter-spacing:.06em;text-transform:uppercase;opacity:.8}
 .light{color:#10161E}
 
 /* En-tête d'un niveau ouvert */
@@ -136,6 +166,7 @@ button:focus-visible{outline:2px solid #fff;outline-offset:-4px}
     <section class="scr" id="fam" hidden></section>
     <section class="scr" id="mot" hidden></section>
     <section class="scr" id="det" hidden></section>
+    <section class="scr" id="quiz" hidden></section>
   </div>
 </div>
 <script>
@@ -368,7 +399,9 @@ const lightAt=t=>t>.78;
 const count=f=>f.m.reduce((a,m)=>a+m[1].length,0);
 
 /* ---- Niveau 1 : courants ---- */
-home.querySelector('.blocks').innerHTML=FAM.map((f,i)=>`<button class="block mv" data-f="${i}" style="--bg:var(${f.c})">
+home.querySelector('.blocks').innerHTML=`<button class="block quizb mv" data-quiz style="--bg:#241A45">
+  <span class="q">S'entraîner</span><b>Quiz : quel est ce biais ?</b><span class="qgo">Jouer ›</span></button>`+
+  FAM.map((f,i)=>`<button class="block mv" data-f="${i}" style="--bg:var(${f.c})">
   <span class="q">${esc(f.q)}</span><b>${esc(f.name)}</b><span class="peek">${f.m.length} motifs</span><span class="n">${count(f)} biais</span></button>`).join('');
 
 /* ---- Niveau 2 : motifs du courant, en gros blocs ---- */
@@ -443,7 +476,7 @@ function renderDet(n,bg,light){
   det.style.setProperty('--bg',bg);det.style.setProperty('--lab',`color-mix(in oklab,var(${f.c}),var(--deep) 28%)`);det.classList.toggle('light',light);
   det._n=n;
   det.innerHTML=`<div class="dwrap">
-   <div class="dhead"><button class="back in" data-back>‹ Retour à la liste</button><span class="crumb in">${esc(f.name)}</span><h3>${esc(n)}</h3></div>
+   <div class="dhead"><button class="back in" data-back>‹ Retour</button><span class="crumb in">${esc(f.name)}</span><h3>${esc(n)}</h3></div>
    <div class="sheet in">
     <section><h4>En une phrase</h4>${d?`<p class="def">${esc(d[0])}</p>`:`<p class="todo">Définition à rédiger pour cette maquette.</p>`}</section>
     ${fx?`<section><h4>Exemples dans la vraie vie</h4><ul class="exs">${fx.ex.map(([dom,t])=>`<li><span class="exd">${esc(dom)}</span><span>${esc(t)}</span></li>`).join('')}</ul></section>`
@@ -523,8 +556,87 @@ function swapDet(n){
   det.querySelector('.dwrap').animate([{transform:'translateX(40px)',opacity:0},{transform:'none',opacity:1}],{duration:D(420),easing:E});
 }
 
+/* ---- Quiz : une situation, quatre biais possibles ---- */
+const quizS=$('#quiz');
+const qnorm=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+const QSTOP=new Set(['biais','effet','erreur','illusion','regle','phenomene','nombre','memoire','position','theorie']);
+/* les exemples qui contiennent le nom du biais donneraient la réponse : on les écarte */
+const giveaway=(b,t)=>qnorm(b).split(/[^a-z0-9]+/).filter(w=>w.length>=5&&!QSTOP.has(w)).some(w=>qnorm(t).includes(w));
+/* synonymes : jamais proposés ensemble, sinon deux réponses seraient justes */
+const QSYN=[["Effet Forer","Effet Barnum"],["Illusion de fréquence","Phénomène de Baader-Meinhof"],
+ ["Escalade irrationnelle","Escalade d'engagement","Biais des coûts irrécupérables"],["Effet abri à vélo","Loi de futilité de Parkinson"],
+ ["Effet de position sérielle","Effet de position dans une série","Effet de primauté","Effet de récence"],["Compensation du risque","Effet Peltzman"],
+ ["Effet Lac Wobegon","Supériorité illusoire","Biais d'excès de confiance"],["Rationalisation post-achat","Biais de soutien du choix"],
+ ["Attente de l'expérimentateur","Biais de l'expérimentateur","Biais d'attente"],["Association implicite","Stéréotype implicite"],
+ ["Erreur d'attribution de la source","Confusion de la source"],["Faux souvenir","Effet de désinformation","Suggestibilité"],
+ ["Erreur fondamentale d'attribution","Effet acteur-observateur"],["Biais de normalité","Biais d'optimisme"]];
+const syn=(a,b)=>a===b||QSYN.some(g=>g.includes(a)&&g.includes(b));
+const QPOOL=[];{const seen=new Set();
+  FAM.forEach((f,fi)=>f.m.forEach((m,mi)=>m[1].forEach(b=>{const fx=FICHE[b];if(!fx)return;
+    fx.ex.forEach(([d,t])=>{const k=b+'|'+t;if(seen.has(k)||giveaway(b,t))return;seen.add(k);QPOOL.push({b,fi,mi,d,t})})})));}
+const Q={filter:-1,cur:null,done:new Set(),score:0,total:0,streak:0,best:0};
+try{Q.best=+localStorage.getItem('quiz-best')||0}catch(e){}
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function nextQuestion(){
+  let pool=QPOOL.filter(q=>Q.filter<0||q.fi===Q.filter);
+  let fresh=pool.filter(q=>!Q.done.has(q));if(!fresh.length){pool.forEach(q=>Q.done.delete(q));fresh=pool}
+  const q=pick(fresh);Q.done.add(q);
+  /* 1 piège du même motif, 2 autres biais du même courant (ou de tous les courants) */
+  const same=FAM[q.fi].m[q.mi][1].filter(b=>!syn(b,q.b));
+  const wide=(Q.filter<0?FAM.flatMap(f=>f.m.flatMap(m=>m[1])):FAM[q.fi].m.flatMap(m=>m[1])).filter(b=>!syn(b,q.b));
+  const opts=[q.b];
+  const add=b=>{if(b&&!opts.some(o=>o===b||syn(o,b)))opts.push(b)};
+  add(pick(same));let guard=0;while(opts.length<4&&guard++<200)add(pick(wide));
+  Q.cur={...q,opts:shuffle(opts)};
+}
+function quizHTML(){
+  const q=Q.cur;
+  return `<div class="fhead mv"><button class="back in" data-back>‹ Courants</button><h3>Quel est ce biais ?</h3>
+   <p class="qstat in"><span>Score ${Q.score} / ${Q.total}</span><span>Série ${Q.streak}</span><span>Record ${Q.best}</span></p></div>
+   <div class="qwrap">
+    <div class="qfilt in">${[['Tous',-1],...FAM.map((f,i)=>[f.name,i])].map(([l,i])=>`<button class="qf" data-qf="${i}" aria-pressed="${Q.filter===i}">${esc(l)}</button>`).join('')}</div>
+    <div class="qcard mv in"><span class="exd">${esc(q.d)}</span><p class="qtext">${esc(q.t)}</p></div>
+    <p class="qask in">Quel biais cognitif est à l'œuvre ?</p>
+    <div class="qopts mv in">${q.opts.map(o=>`<button class="qo" data-qa="${esc(o)}">${esc(o)}</button>`).join('')}</div>
+    <div class="qfb" hidden></div>
+   </div>`;
+}
+function renderQuiz(){if(!Q.cur)nextQuestion();quizS.style.setProperty('--hd','#1A1233');quizS.innerHTML=quizHTML()}
+function answer(btn){
+  const q=Q.cur,ok=btn.dataset.qa===q.b;
+  Q.total++;if(ok){Q.score++;Q.streak++;if(Q.streak>Q.best){Q.best=Q.streak;try{localStorage.setItem('quiz-best',Q.best)}catch(e){}}}else Q.streak=0;
+  quizS.querySelectorAll('.qo').forEach(b=>{b.disabled=true;
+    if(b.dataset.qa===q.b)b.classList.add('ok');else if(b===btn)b.classList.add('ko');else b.classList.add('dim')});
+  const st=quizS.querySelector('.qstat');st.innerHTML=`<span>Score ${Q.score} / ${Q.total}</span><span>Série ${Q.streak}</span><span>Record ${Q.best}</span>`;
+  const fb=quizS.querySelector('.qfb'),d=DEF[q.b];
+  fb.innerHTML=`<span class="qres ${ok?'good':'bad'}">${ok?'✓ Bien vu !':'✗ Pas tout à fait'}</span>
+    <p class="qname">${esc(q.b)}</p>${d?`<p class="qdef">${esc(d[0])}</p>`:''}
+    <div class="qbtns"><button class="qnext" data-qnext>Question suivante ›</button><button class="qsee" data-qsee>Voir la fiche</button></div>`;
+  fb.hidden=false;
+  fb.animate([{opacity:0,transform:'translateY(14px)'},{opacity:1,transform:'none'}],{duration:D(320),easing:E});
+  const w=quizS.querySelector('.qwrap');setTimeout(()=>w.scrollTo({top:w.scrollHeight,behavior:reduce?'auto':'smooth'}),D(120));
+}
+function nextQ(){
+  nextQuestion();
+  const w=quizS.querySelector('.qwrap'),card=quizS.querySelector('.qcard'),opts=quizS.querySelector('.qopts');
+  /* l'ancienne question part d'un bloc vers la gauche, la nouvelle arrive d'un bloc par la droite */
+  [card,opts].forEach(el=>el.animate([{transform:'none',opacity:1},{transform:'translateX(-40px)',opacity:0}],{duration:D(180),easing:'ease-in',fill:'forwards'}));
+  setTimeout(()=>{quizS.innerHTML=quizHTML();quizS.querySelector('.qwrap').scrollTop=0;
+    [quizS.querySelector('.qcard'),quizS.querySelector('.qopts')].forEach(el=>el.animate([{transform:'translateX(40px)',opacity:0},{transform:'none',opacity:1}],{duration:D(320),easing:E}))},D(180));
+}
+function seeFiche(btn){
+  const q=Q.cur;F=q.fi;M=q.mi;
+  renderDet(q.b,shade(FAM[q.fi].c,.35),false);push(quizS,btn,det);
+}
+
 $('#sw').addEventListener('click',e=>{
   const t=e.target.closest('button');if(!t||busy)return;
+  if(t.hasAttribute('data-quiz')){renderQuiz();push(home,t,quizS);return}
+  if(t.dataset.qa!==undefined){answer(t);return}
+  if(t.hasAttribute('data-qnext')){nextQ();return}
+  if(t.hasAttribute('data-qsee')){seeFiche(t);return}
+  if(t.dataset.qf!==undefined){Q.filter=+t.dataset.qf;nextQuestion();quizS.innerHTML=quizHTML();return}
   if(t.dataset.f!==undefined){renderFam(+t.dataset.f);push(home,t,fam)}
   else if(t.dataset.m!==undefined){renderMot(+t.dataset.m);push(fam,t,mot)}
   else if(t.dataset.b){renderDet(t.dataset.b,t.style.getPropertyValue('--bg'),t.classList.contains('light'));push(mot,t,det)}
