@@ -1,10 +1,10 @@
 /* Biais cognitifs : fonctionnement hors connexion.
    L'app et ses icônes sont mises en cache à l'installation ; les polices le sont à la première visite. */
-const VERSION = 'biais-cognitifs-v2';
+const VERSION = 'biais-cognitifs-v3';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './sources.json'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {
@@ -18,7 +18,7 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   // Page de l'app : réseau d'abord (pour recevoir les mises à jour), cache si hors connexion
   if (req.mode === 'navigate') {
-    e.respondWith(fetch(req).then(res => {
+    e.respondWith(fetch(req, { cache: 'no-store' }).then(res => {
       const copy = res.clone(); caches.open(VERSION).then(c => c.put('./index.html', copy)); return res;
     }).catch(() => caches.match('./index.html')));
     return;
