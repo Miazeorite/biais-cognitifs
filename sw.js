@@ -1,6 +1,6 @@
-/* Courants : fonctionnement hors connexion.
+/* Biais cognitifs : fonctionnement hors connexion.
    L'app et ses icônes sont mises en cache à l'installation ; les polices le sont à la première visite. */
-const VERSION = 'courants-v1';
+const VERSION = 'biais-cognitifs-v1';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
