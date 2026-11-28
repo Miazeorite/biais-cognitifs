@@ -58,6 +58,14 @@ button:focus-visible{outline:2px solid #fff;outline-offset:-4px}
 .srow b{font:600 15.5px var(--f-b)}
 .srow small{font-size:12px;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .srow mark{background:rgba(255,255,255,.28);color:inherit;border-radius:3px;padding:0 1px}
+.smic{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;position:relative}
+.hsearch .smic svg{width:19px;height:19px;stroke:#fff}
+.smic.on{background:#E0457B}
+.smic.on::before{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid #E0457B;animation:mic 1.2s ease-out infinite}
+@keyframes mic{from{transform:scale(.85);opacity:1}to{transform:scale(1.35);opacity:0}}
+.srow.sit small{white-space:normal;line-height:1.35}
+.srow .sw{font:500 10px var(--f-m);letter-spacing:.06em;text-transform:uppercase;opacity:.75;margin:1px 0 1px}
+.snote{margin:0;padding:14px 18px;color:rgba(255,255,255,.6);font-size:12px;line-height:1.45}
 .sempty{margin:0;padding:18px;color:rgba(255,255,255,.75);font-size:14px;line-height:1.5}
 .block .q{font:500 11px var(--f-m);letter-spacing:.08em;text-transform:uppercase;opacity:.75}
 .block b{font:700 28px/1 var(--f-d);letter-spacing:-.02em;padding-right:64px}
@@ -649,9 +657,9 @@ function swapDet(n){
 
 /* ---- Recherche ---- */
 home.insertAdjacentHTML('afterbegin',`<div class="hsearch mv"><label><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-  <input id="sq" type="search" placeholder="Rechercher un biais…" autocomplete="off" enterkeyhint="search" aria-label="Rechercher un biais">
+  <input id="sq" type="search" placeholder="Un biais ou une situation…" autocomplete="off" enterkeyhint="search" aria-label="Rechercher un biais">
   <button class="sclear" id="sclear" aria-label="Effacer la recherche" hidden>×</button></label></div><div class="sres" id="sres" hidden></div>`);
-const sq=$('#sq'),sres=$('#sres'),sclear=$('#sclear');
+const sq=$('#sq'),sres=$('#sres'),sclear=$('#sclear'),SPH=sq.placeholder;
 const snorm=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
 /* index : nom du biais (prioritaire), puis définition et nom anglais */
 const SIDX=[];{const seen=new Set();FAM.forEach((f,fi)=>f.m.forEach((m,mi)=>m[1].forEach(b=>{if(seen.has(b))return;seen.add(b);
@@ -662,9 +670,9 @@ function runSearch(){
   if(!v){if(!sres.hidden){sres.animate([{opacity:1},{opacity:0,transform:'translateY(12px)'}],{duration:D(180)}).onfinish=()=>{sres.hidden=true}}return}
   const byName=SIDX.filter(x=>x.n.includes(v)).sort((a,b)=>(a.n.startsWith(v)?0:1)-(b.n.startsWith(v)?0:1)||a.n.localeCompare(b.n));
   const byDef=v.length>=4?SIDX.filter(x=>!x.n.includes(v)&&x.d.includes(v)):[];
-  const rows=[...byName,...byDef];
+  const rows=[...byName,...byDef],nw=raw.split(/\s+/).length;
   sres.style.top=$('.hsearch').offsetHeight+'px';
-  sres.innerHTML=rows.length?`<p class="scount">${rows.length} biais</p>`+rows.map(x=>{const f=FAM[x.fi];
+  sres.innerHTML=(nw>=4||(nw>=2&&!byName.length))?renderSituation(raw):rows.length?`<p class="scount">${rows.length} biais</p>`+rows.map(x=>{const f=FAM[x.fi];
     return `<button class="srow" data-sb="${esc(x.b)}" style="--bg:${shade(f.c,.38)}"><b>${hl(x.b,v)}</b><small>${esc(f.name)} · ${esc(f.m[x.mi][0])}</small></button>`}).join('')
     :`<p class="sempty">Aucun biais ne correspond à « ${esc(raw)} ». Essayez un autre mot, par exemple « mémoire », « groupe » ou « risque ».</p>`;
   const first=sres.hidden;sres.hidden=false;
@@ -678,6 +686,98 @@ function openFromSearch(btn){
   const b=btn.dataset.sb,{fi,mi}=where(b);F=fi;M=mi;sq.blur();
   renderDet(b,getComputedStyle(btn).backgroundColor,false);push(home,btn,det);
 }
+
+/* ---- Décrire une situation (au clavier ou au micro) : l'app propose les biais les plus proches ----
+   Sans IA : des formulations typiques (règles) + une comparaison avec les définitions et les exemples des fiches. */
+const SIT_RULES=[
+ [/^(?=.*\b(asiatiques|chinois(es)?|japonais(es)?|les noirs|blacks|arabes|maghrebins|africains|juifs|musulman(e)?s|roms|gitans|etrangers|immigres|migrants|les femmes|les hommes|les filles|les garcons|les vieux|les jeunes|homos|gays|blondes|americains|anglais|allemands|italiens|parisiens|banlieusards|les riches|les pauvres|les profs|les fonctionnaires|les politiques|les flics|les policiers)\b)(?=.*(\b(tous|toutes) les\b|\b(sont|ont|font|aiment|savent|veulent) (tous|toutes|toujours|jamais)\b|\b(ils|elles) (sont|ont) tou(s|tes)\b|\bces gens\b|\btypique|\btous des\b|\btoutes des\b))/,["Stéréotypage","Biais d'homogénéité d'exogroupe","Erreur d'attribution de groupe","Préjugé"],"Généralisation à tout un groupe de personnes"],
+ [/\b(asiatiques|chinois(es)?|japonais(es)?|les noirs|blacks|arabes|maghrebins|africains|juifs|musulman(e)?s|roms|gitans|etrangers|immigres|migrants|les femmes|les hommes|les filles|les garcons|les vieux|les jeunes|homos|gays|blondes|americains|anglais|allemands|italiens|parisiens|banlieusards|les riches|les pauvres|les profs|les fonctionnaires|les politiques|les flics|les policiers)\b/,["Préjugé","Stéréotypage"],"Jugement porté sur une catégorie de personnes",3],
+ [/\b(c'?est (dans )?leur nature|par nature|c'?est genetique|dans (leur|le) sang|(ils|elles) sont nee?s? comme ca|c'?est inne|ca ne changera jamais chez)\b/,["Essentialisme","Stéréotypage"],"On attribue au groupe une « nature » fixe"],
+ [/\b(ils|elles) se ressemblent tous|tous pareils|toutes pareilles|tous les memes|on ne les distingue pas\b/,["Biais d'homogénéité d'exogroupe","Effet inter-races"],"Les membres d'un autre groupe paraissent tous semblables"],
+ [/^(?=.*\b(je connais (quelqu'?un|un mec|une fille|un gars)|j'?en connais|mon (oncle|voisin|cousin|pere|frere|ami|pote|grand-pere|collegue)|ma (tante|voisine|cousine|mere|soeur|amie|grand-mere|collegue)|moi j'?ai|perso(nnellement)? j'?ai|ca m'?est arrive)\b)(?=.*\b(donc|alors|preuve|pourtant|toute sa vie|toute ma vie|jamais eu|n'?a jamais|et (il|elle) (va|est|a|n'?a)|ca marche|ca prouve)\b)/,["Erreur de la preuve anecdotique","Insensibilité à la taille du groupe"],"Un cas personnel sert de preuve générale"],
+ [/\b(tout le monde (le |en )?(fait|pense|dit|sait|a|achete|utilise|regarde|porte|mange|vote)|la plupart des gens|la majorite|tout le monde est d'?accord|c'?est a la mode|tout le monde en a)\b/,["Effet de mode","Effet de faux consensus"],"« Tout le monde le fait / le pense »"],
+ [/\b(c'?etait mieux avant|de mon temps|a mon epoque|tout fout le camp|ca va de mal en pis|la jeunesse d'?aujourd'?hui|les jeunes (de nos jours|d'?aujourd'?hui)|decadence|on va droit dans le mur)\b/,["Déclinisme","Rétrospective de la vie en rose"],"Le passé idéalisé, le présent noirci"],
+ [/\b(je (le |l'?)(savais|avais dit)|je te l'?avais dit|c'?etait (evident|previsible|couru d'?avance|sur)|on aurait du (le )?(voir|savoir)|ca se voyait)\b/,["Biais rétrospectif","Biais de résultat"],"Après coup, tout paraît prévisible"],
+ [/\b(un (medecin|docteur|expert|professeur|scientifique|specialiste|chercheur)|des (experts|scientifiques|medecins)|selon (un|les|des) (experts?|specialistes?)|il est (medecin|prof|docteur|expert)|c'?est un (expert|pro|professionnel)|a la tele|un influenceur|une celebrite)\b/,["Biais d'autorité","Effet de halo"],"L'avis vaut par le statut de la personne"],
+ [/\b(deja (paye|investi|depense|commence)|apres tout ce (temps|qu'?on a)|on (ne )?va pas (tout )?(abandonner|lacher) maintenant|trop tard pour (arreter|reculer)|pour rien|gacher)\b/,["Biais des coûts irrécupérables","Escalade d'engagement"],"Continuer parce qu'on a déjà investi"],
+ [/\b(il|elle|ils|elles) l'?(a|ont) (bien )?(cherche|merite)|bien fait pour (lui|elle|eux)|il n'?y a pas de hasard|on recolte ce qu'?on seme|s'?(il|elle)s? (avai|etai)(t|ent)|c'?est de leur faute s'?ils sont pauvres|ils n'?ont qu'?a travailler\b/,["Croyance en un monde juste","Hypothèse d'attribution défensive"],"La victime aurait « mérité » ce qui lui arrive"],
+ [/\b(depuis que|a cause de|ca vient (du|de la|des)|c'?est (forcement )?(a cause|la faute))\b.*\b(donc|alors|forcement|c'?est pour ca)\b|\bcorrelation|\bpleine lune\b|\bporte(-| )bonheur\b|\bporte(-| )malheur\b/,["Corrélation illusoire","Illusion des séries"],"Un lien de cause supposé entre deux faits"],
+ [/\b((va|doit|devrait) (forcement |bien |finir par )*(tomber|sortir|arriver|gagner)|fois de suite|d'?affilee|ca fait longtemps que .* (sorti|tombe)|c'?est mon tour|la chance va tourner|il est en serie|il est en feu|la main chaude)\b/,["Erreur du parieur","Erreur de la main chaude"],"On croit que le hasard « se rééquilibre » ou « s'emballe »"],
+ [/\b(il|elle) (est|a l'?air) (beau|belle|mignon(ne)?|sympa|gentil(le)?|charmant(e)?|bien habille(e)?) (donc|alors)|\bil a une bonne tete\b|\bavec une tete pareille\b|\bpremiere impression\b/,["Effet de halo","Effet de primauté"],"Une qualité visible colore tout le jugement"],
+ [/\b(ca ne (m'?)?arrivera (pas|jamais)( a moi)?|pas a moi|moi je ne risque rien|je gere|je controle|ca n'?arrive qu'?aux autres)\b/,["Biais d'optimisme","Illusion de contrôle"],"« Ça n'arrive qu'aux autres »"],
+ [/\b(je (conduis|cuisine|travaille|joue) mieux que|meilleur(e)? que (la moyenne|les autres)|plus (intelligent|malin|doue)e? que|je suis au-dessus|je m'?y connais)\b/,["Supériorité illusoire","Effet Dunning-Kruger","Biais d'excès de confiance"],"Se juger meilleur que la moyenne"],
+ [/\b(on a toujours fait (comme )?(ca|ainsi)|pourquoi changer|ca a toujours marche|ne touchons a rien|c'?est comme ca depuis toujours)\b/,["Biais du statu quo","Justification du système"],"Préférer ce qui existe déjà"],
+ [/\b(il|elle) (est|etait) (vraiment |trop |tellement |si |completement )?(paresseux|paresseuse|feignant(e)?|bete|nul(le)?|incompetent(e)?|mechant(e)?|egoiste)|c'?est (de )?sa faute|c'?est un (con|idiot|incapable)\b/,["Erreur fondamentale d'attribution","Biais d'attribution des traits"],"On explique un acte par le caractère, pas par la situation"],
+ [/\b(c'?est grace a moi|c'?est pas (de )?ma faute|j'?ai pas eu de chance|c'?etait truque|l'?arbitre|le prof m'?a mal note)\b/,["Biais d'autocomplaisance","Effet acteur-observateur"],"Ses succès à soi, ses échecs aux circonstances"],
+ [/\b(je l'?ai (lu|vu|entendu) partout|on l'?entend partout|tout le monde le dit|on le repete|ca tourne sur les reseaux|ca circule)\b/,["Effet de vérité illusoire","Heuristique de disponibilité","Effet de mode"],"Une idée répétée finit par paraître vraie"],
+ [/\b(ca vient d'?(eux|lui|elle)|venant de (lui|elle|eux)|si c'?est (lui|elle|eux) qui (le )?propose|de la part de la droite|de la part de la gauche|le camp d'?en face)\b/,["Dévaluation réactive","Favoritisme intragroupe"],"Une idée rejetée à cause de qui la propose"],
+ [/\b(les (gens|autres) se font (avoir|manipuler)|pas moi|moi je ne suis pas influence|les medias manipulent)\b/,["Effet « troisième personne »","Biais de l'angle mort"],"Les autres seraient influencés, pas soi"],
+ [/\b(je suis (objectif|neutre|impartial)|moi je n'?ai pas de (biais|prejuges)|je vois les choses comme elles sont|c'?est evident pour tout le monde)\b/,["Biais de l'angle mort","Réalisme naïf"],"Se croire sans biais"],
+ [/\b(avion|crash|attentat|requin|terroris|faits divers|aux infos|au journal|on n'?entend parler que)\b/,["Heuristique de disponibilité","Négligence des probabilités"],"Un risque spectaculaire semble plus fréquent"],
+ [/\b(risque zero|zero risque|100 ?% (sur|sans risque)|eliminer (tout|completement) le risque)\b/,["Biais du risque zéro","Effet de pseudo-certitude"],"Vouloir supprimer complètement un petit risque"],
+ [/\b(prix barre|au lieu de|avant c'?etait|solde|promo|reduction|remise)\b/,["Ancrage","Effet de contraste"],"Un premier prix sert de point de comparaison"],
+ [/\b(\d+ ?% (de reussite|de survie|de chances|de mortalite|de matiere grasse|sans)|taux de (survie|reussite|mortalite)|presente comme)\b/,["Effet de cadrage","Aversion à la perte"],"La présentation des chiffres oriente le choix"],
+ [/\b(a arrete l'?ecole et (a reussi|est millionnaire)|il a reussi sans|ceux qui ont reussi|les anciens (batiments|meubles) (etaient|sont) plus solides|steve jobs|bill gates|zuckerberg)\b/,["Biais du survivant","Erreur de la preuve anecdotique"],"On ne regarde que ceux qui ont réussi"],
+ [/\b(horoscope|astro|signe astrologique|voyant(e)?|test de personnalite|ca me correspond trop|c'?est tellement moi|medium)\b/,["Effet Barnum","Effet Forer","Validation subjective"],"Un portrait vague semble fait pour soi"],
+ [/\b(nouveau|derniere (version|generation)|innovation|moderne|c'?est l'?avenir|nouvelle technologie)\b.*\b(donc|alors|forcement)\b|\bc'?est nouveau donc\b/,["Appel à la nouveauté","Biais pro-innovation"],"Nouveau, donc forcément mieux"],
+ [/\b(son argument est (faux|nul)|il s'?est trompe (dans|sur) (son|un) argument|mal argumente donc)\b/,["Argument tiré d'un sophisme"],"Un mauvais argument ne rend pas la conclusion fausse"],
+ [/\b(notre equipe|chez nous on|les notres|nos gars|mon equipe|mon camp|mon pays est le meilleur|on est les meilleurs)\b/,["Favoritisme intragroupe","Effet de halo"],"Préférer son propre groupe"],
+ [/\b(visage|tete|forme) (dans|sur) (les nuages|le mur|la lune|un toast|la tache)|je vois un visage\b/,["Paréidolie"],"Voir des formes familières dans le hasard"],
+ [/\b(je cherche (des|les) preuves|ca confirme|j'?avais raison|je ne lis que|je ne regarde que|les sources qui vont dans mon sens|je ne crois pas leurs etudes)\b/,["Biais de confirmation","Perception sélective"],"Ne retenir que ce qui confirme"],
+ [/\b(plus (il|elle|on) (me )?(contredit|prouve)|encore plus convaincu|ca me conforte encore plus)\b/,["Effet boomerang","Biais de confirmation"],"La contradiction renforce la croyance"],
+ [/\b(je ferai (ca|mon regime|le sport) (demain|lundi|plus tard)|plus tard|tout de suite plutot que)\b/,["Rabais hyperbolique","Biais de retenue"],"L'immédiat l'emporte sur plus tard"],
+ [/\b(ca va (prendre|me prendre) (que|seulement)|c'?est l'?affaire de|en deux temps trois mouvements|j'?aurai fini (avant|pour))\b/,["Biais de planification","Biais d'excès de confiance"],"Sous-estimer le temps nécessaire"],
+ [/\b(ils pensent (tous )?comme moi|tout le monde pense comme moi|evidemment ils sont d'?accord)\b/,["Effet de faux consensus","Biais de projection"],"Croire que les autres pensent comme soi"],
+ [/\b(tout le monde (me )?regarde|tout le monde a remarque|ils ont vu que|j'?avais l'?air ridicule)\b/,["Effet de projecteur","Illusion de transparence"],"Se croire plus observé qu'on ne l'est"],
+ [/\b(c'?est mon (objet|truc|bien)|je ne le vendrai pas moins de|ca vaut plus parce que c'?est (a )?moi|je l'?ai (fait|monte) moi-?meme)\b/,["Effet de dotation","Effet IKEA"],"Ce qui est à soi paraît valoir plus"],
+ [/\b(l'?ia|l'?ordinateur|le gps|l'?algorithme|chatgpt|l'?appli) (a dit|l'?a dit|dit que|ne peut pas se tromper)\b/,["Biais d'automatisation","Biais d'autorité"],"Faire confiance à la machine par défaut"],
+ [/\b(si (on|tu|vous) (gagnez|gagnes|gagne)|l'?autre (perd|a perdu)|pour qu'?il y ait des gagnants|ils (nous )?prennent (nos|notre) (emplois?|travail|place)|ils volent)\b/,["Biais de la somme nulle","Favoritisme intragroupe"],"Le gain des uns serait forcément la perte des autres"],
+ [/\b(idees?|propositions?|solutions?) (qui (viennent|vient)|venant) d(e l'?|'?)(autre|exterieur|ailleurs|un autre)|pas (invente|fait|developpe) (ici|chez nous)|ca ne vient pas de chez nous\b/,["Pas inventé ici","Dévaluation réactive"],"Rejeter une idée parce qu'elle vient d'ailleurs"],
+ [/\b(plus mal|ca (m'?)?a (soigne|gueri)|ca (soigne|guerit)|remede|homeopath|bracelet|magnetiseur|tisane|complement alimentaire|pierres? (de|qui)|lithotherapie)\b/,["Effet placebo","Corrélation illusoire"],"Une amélioration attribuée au remède plutôt qu'au hasard ou à l'attente"],
+ [/\b(ca rime|qui vole un oeuf|proverbe)\b/,["Effet « ça rime donc c'est bon »"],"Une formule qui sonne bien paraît plus vraie"]
+];
+const SSTOP=new Set('a au aux avec ce ces cet cette c ca ce dans de des du d elle elles en et est etait eu il ils je j la le les leur lui l ma mais me mes m moi mon ne n nos notre nous on ou par pas pour qu que qui quoi sa se ses si son sur s ta te tes toi ton tu t un une vos votre vous y avait ont sont suis es etre avoir fait faire dit dire comme plus tres bien tout tous toute toutes alors donc quand meme aussi encore ete apres avant cela celui celle quelqu quelque chose fois parce'.split(' '));
+const stem=w=>{w=w.replace(/(ements?|ations?|issements?|euses?|eurs?|ables?|iques?|ismes?|istes?|ites?|ees?|es|s|x)$/,'');return w.slice(0,7)};
+const toks=s=>snorm(s).split(/[^a-z0-9]+/).filter(w=>w.length>2&&!SSTOP.has(w)).map(stem);
+const SDOC=SIDX.map(x=>{const d=DEF[x.b]||[],fx=FICHE[x.b];
+  const exs=[...(fx?fx.ex.map(e=>e[1]):[]),...(d[1]?[d[1]]:[])];
+  const t=[...toks(x.b),...toks(x.b),...toks(d[0]||''),...toks(d[0]||''),...exs.flatMap(toks),...toks(fx?fx.why:''),...toks(FAM[x.fi].m[x.mi][0])];
+  const tf=new Map();t.forEach(w=>tf.set(w,(tf.get(w)||0)+1));return {x,tf,len:t.length,exs}});
+const SDF=new Map();SDOC.forEach(d=>d.tf.forEach((_,w)=>SDF.set(w,(SDF.get(w)||0)+1)));
+const SAVG=SDOC.reduce((a,d)=>a+d.len,0)/SDOC.length;
+function situate(raw){
+  const v=snorm(raw).replace(/[’`]/g,"'"),q=[...new Set(toks(raw))],N=SDOC.length,sc=new Map(),why=new Map();
+  SDOC.forEach(d=>{let s=0;q.forEach(w=>{const f=d.tf.get(w);if(!f)return;const idf=Math.log(1+(N-SDF.get(w)+.5)/(SDF.get(w)+.5));s+=idf*f*2.2/(f+1.2*(.25+.75*d.len/SAVG))});if(s>0)sc.set(d.x.b,s)});
+  const mx=Math.max(1e-9,...sc.values());sc.forEach((s,b)=>sc.set(b,5*s/mx*Math.min(1,mx/4)));
+  SIT_RULES.forEach(([re,bs,label,w=7])=>{if(!re.test(v))return;bs.forEach((b,i)=>{sc.set(b,(sc.get(b)||0)+w-i*1.2);if(!why.has(b))why.set(b,label)})});
+  const srt=[...sc].sort((a,b)=>b[1]-a[1]),top=srt.length?srt[0][1]:0;
+  return srt.filter(([b,s])=>s>=2.2&&s>=top*.4&&(!why.size||why.has(b))).slice(0,5).map(([b,s])=>{
+    const d=SDOC.find(d=>d.x.b===b);let ex='';
+    if(!why.has(b)){let best=0;d.exs.forEach(e=>{const k=toks(e).filter(w=>q.includes(w)).length;if(k>best){best=k;ex=e}})}
+    return {x:d.x,why:why.get(b),ex,s}});
+}
+function renderSituation(raw){
+  const r=situate(raw);
+  const seen=new Set();
+  return `<p class="scount">Biais possibles pour cette situation</p>`+(r.length?r.map(({x,why,ex})=>{const f=FAM[x.fi],def=esc((DEF[x.b]||[''])[0]);
+    const first=why&&!seen.has(why);if(why)seen.add(why);
+    return `<button class="srow sit" data-sb="${esc(x.b)}" style="--bg:${shade(f.c,.38)}"><b>${esc(x.b)}</b>${first?`<small class="sw">Repéré : ${esc(why)}</small>`:''}<small>${why?def:ex?'Ressemble à : « '+esc(ex)+' »':def}</small></button>`}).join('')
+    +`<p class="snote">Suggestions automatiques, sans IA : elles repèrent des formulations typiques et comparent avec les exemples de l'app. Ouvrez la fiche pour juger vous-même.</p>`
+    :`<p class="sempty">Je n'ai pas trouvé de biais proche. Essayez de décrire la situation autrement, par exemple en citant la phrase exacte qui a été dite.</p>`);
+}
+/* Micro : dictée vocale du téléphone (gratuite, gérée par le navigateur) */
+{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(SR){$('#sclear').insertAdjacentHTML('afterend',`<button class="smic" id="smic" aria-label="Décrire une situation à voix haute"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>`);
+  const mic=$('#smic');let rec=null,base='';
+  mic.addEventListener('click',e=>{e.preventDefault();
+    if(rec){rec.stop();return}
+    rec=new SR();rec.lang='fr-FR';rec.interimResults=true;rec.continuous=false;base=sq.value.trim();
+    mic.classList.add('on');sq.placeholder='Je vous écoute…';
+    rec.onresult=ev=>{let t='';for(const r of ev.results)t+=r[0].transcript;sq.value=(base?base+' ':'')+t;runSearch()};
+    rec.onerror=ev=>{if(ev.error==='not-allowed')sq.placeholder='Micro refusé : autorisez-le dans le navigateur'};
+    rec.onend=()=>{mic.classList.remove('on');rec=null;setTimeout(()=>{if(sq.placeholder==='Je vous écoute…')sq.placeholder=SPH},50)};
+    try{rec.start()}catch(_){mic.classList.remove('on');rec=null}
+  });}}
 
 /* ---- Quiz : une situation, quatre biais possibles ---- */
 const quizS=$('#quiz');
