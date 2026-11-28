@@ -138,6 +138,11 @@ button:focus-visible{outline:2px solid #fff;outline-offset:-4px}
 .auts a{color:inherit;text-decoration:underline;text-decoration-color:color-mix(in oklab,currentColor 35%,transparent);text-underline-offset:3px}
 .auts .ay{font:500 11px var(--f-m);letter-spacing:.04em;padding:2px 6px;border-radius:6px;background:color-mix(in oklab,var(--lab) 14%,transparent);color:var(--lab)}
 .auts p{flex-basis:100%;margin:2px 0 0;font-size:14px;line-height:1.45;opacity:.85}
+.hcred{flex:none;display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;padding:10px 16px calc(10px + var(--bot,0px));background:#130E22;color:rgba(255,255,255,.72);text-align:left;font-size:11.5px;line-height:1.35}
+.hcred b{color:#fff;font-weight:600}
+.hcred i{font-style:normal;font-size:18px;opacity:.7}
+.credits a{color:var(--lab);font-weight:600}
+.credits .auts{margin:12px 0}
 /* En-tête d'un niveau ouvert */
 .fhead{flex:none;padding:calc(var(--top) + 2px) 20px 14px;background:var(--hd)}
 .back{font:500 13px var(--f-b);opacity:.8;display:inline-flex;gap:6px;align-items:center;padding:4px 0}
@@ -889,10 +894,43 @@ function seeFiche(btn){
   renderDet(b,shade(FAM[fi].c,.35),false);push(quizS,btn,det);
 }
 
+/* ---- Crédits : rendre à César ce qui est à César ---- */
+home.insertAdjacentHTML('beforeend',`<button class="hcred mv" data-credits><span>D'après le <b>Cognitive Bias Codex</b> de Buster Benson et John Manoogian III · traduction Albert Moukheiber et Mariam Chammat</span><i>›</i></button>`);
+function renderCredits(){
+  det._n=null;det.style.setProperty('--bg','#241A45');det.style.setProperty('--lab','#5B3FC4');det.classList.remove('light');
+  const L=(u,t)=>`<a href="${u}" target="_blank" rel="noopener">${t}</a>`;
+  det.innerHTML=`<div class="dwrap">
+   <div class="dhead"><button class="back in" data-back>‹ Retour</button><span class="crumb in">Sources et crédits</span><h3>Rendre à César…</h3></div>
+   <div class="sheet in credits">
+    <section><h4>Le Cognitive Bias Codex</h4>
+     <p class="mech">Cette app suit l'organisation du <b>Cognitive Bias Codex</b>, la célèbre roue des biais cognitifs publiée en 2016.</p>
+     <ul class="auts">
+      <li><b>Buster Benson</b><span class="ay">2016</span><p>A classé les biais de Wikipédia en 4 grands problèmes et 20 motifs : c'est la structure en courants et en motifs de cette app.</p></li>
+      <li><b>John Manoogian III (jm3)</b><span class="ay">2016</span><p>A conçu et dessiné le Codex à partir de ce classement.</p></li>
+      <li><b>Albert Moukheiber et Mariam Chammat</b><span class="ay">Chiasma</span><p>Ont traduit le Codex en français.</p></li>
+      <li><b>Les contributeurs de Wikipédia</b><p>Ont rassemblé la liste des biais sur laquelle s'appuie le Codex.</p></li>
+     </ul>
+     <p class="mech">Le Codex est publié sous licence ${L('https://creativecommons.org/licenses/by-sa/4.0/deed.fr','<b>CC BY-SA 4.0</b>')} : on peut le réutiliser à condition de citer ses auteurs et de partager sous la même licence. ${L('https://commons.wikimedia.org/wiki/File:The_Cognitive_Bias_Codex_(French)_-_John_Manoogian_III_(jm3).svg','Voir le Codex original')}.</p>
+    </section>
+    <section><h4>Les chercheurs</h4>
+     <p class="mech">Les biais cognitifs ne sont l'invention de personne : ils ont été mis au jour par des dizaines de chercheurs, au fil d'un siècle d'expériences. Chaque fiche cite les siens, dans la rubrique <b>Chercheurs clés</b>.</p>
+     <ul class="auts">
+      <li><b>Herbert Simon</b><span class="ay">1955</span><p>Notion de « rationalité limitée » : notre esprit décide avec un temps et des informations limités.</p></li>
+      <li><b>Amos Tversky et Daniel Kahneman</b><span class="ay">1974</span><p>Article « Judgment under Uncertainty: Heuristics and Biases », point de départ de l'étude moderne des biais.</p></li>
+      <li><b>Gerd Gigerenzer</b><span class="ay">années 1990</span><p>Montre que ces raccourcis sont souvent utiles et efficaces, pas seulement des erreurs.</p></li>
+     </ul>
+    </section>
+    <section><h4>Les textes de l'app</h4>
+     <p class="mech">Les définitions, exemples et explications ont été rédigés pour cette app à partir de Wikipédia et de la littérature scientifique. Comme ils adaptent le Codex, ils sont partagés sous la même licence CC BY-SA 4.0.</p>
+    </section>
+   </div></div>`;
+}
+
 $('#sw').addEventListener('click',e=>{
   const t=e.target.closest('button');if(!t||busy)return;
   if(t.dataset.sb){openFromSearch(t);return}
   if(t.hasAttribute('data-quiz')){renderQuiz();push(home,t,quizS);return}
+  if(t.hasAttribute('data-credits')){renderCredits();push(home,t,det);return}
   if(t.dataset.qa!==undefined){answer(t);return}
   if(t.hasAttribute('data-qnext')){nextQ();return}
   if(t.hasAttribute('data-qsee')){seeFiche(t);return}
